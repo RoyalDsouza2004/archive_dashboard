@@ -1,10 +1,10 @@
 import { Request } from "express";
-import { TryCatch } from "../middlewares/error";
+import { TryCatch } from "../middlewares/error.js";
 import fs from "fs";
 import path from "path";
-import { NewNewspaperType } from "../types/types";
-import ErrorHandler from "../utils/utility-class";
-import { getConnection, insertLog } from "../utils/features";
+import { NewNewspaperType } from "../types/types.js";
+import ErrorHandler from "../utils/utility-class.js";
+import { getConnection, insertLog } from "../utils/features.js";
 
 export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspaperType>, res, next) => {
       const { unit, date , publication } = req.body;

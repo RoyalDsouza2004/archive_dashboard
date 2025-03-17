@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addNewFiles, getNewNewspapers } from "../controllers/newspaper";
+import { addNewFiles, getNewNewspapers } from "../controllers/newspaper.js";
 
 
 const router = Router();

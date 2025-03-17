@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import dotenv from 'dotenv';
-import { UploadFilesType } from '../types/types';
+import { UploadFilesType } from '../types/types.js';
 
 dotenv.config();
 

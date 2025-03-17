@@ -1,12 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertLog = exports.getConnection = void 0;
-const mariadb_1 = __importDefault(require("mariadb"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+import mariadb from 'mariadb';
+import dotenv from 'dotenv';
+dotenv.config();
 const poolConfig = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -15,8 +9,8 @@ const poolConfig = {
     port: parseInt(process.env.DB_PORT || '3306'),
     connectionLimit: 5,
 };
-const pool = mariadb_1.default.createPool(poolConfig);
-const getConnection = async () => {
+const pool = mariadb.createPool(poolConfig);
+export const getConnection = async () => {
     return await pool.getConnection()
         .then((conn) => {
         console.log(`Connected to MariaDB http://${poolConfig.host}:${poolConfig.port}`);
@@ -27,11 +21,10 @@ const getConnection = async () => {
         throw err;
     });
 };
-exports.getConnection = getConnection;
-const insertLog = async ({ Sub_Edition_Id, date, Page_No_From, Page_No_To, filePath }) => {
+export const insertLog = async ({ Sub_Edition_Id, date, Page_No_From, Page_No_To, filePath }) => {
     let conn;
     try {
-        conn = await (0, exports.getConnection)();
+        conn = await getConnection();
         const query = `
           INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
           VALUES (?, ?, ?, ?, ?);
@@ -47,4 +40,3 @@ const insertLog = async ({ Sub_Edition_Id, date, Page_No_From, Page_No_To, fileP
             conn.release();
     }
 };
-exports.insertLog = insertLog;

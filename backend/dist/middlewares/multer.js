@@ -1,11 +1,5 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.singleUpload = void 0;
-const multer_1 = __importDefault(require("multer"));
-const storage = multer_1.default.diskStorage({
+import multer from "multer";
+const storage = multer.diskStorage({
     destination(req, file, callback) {
         callback(null, "uploads");
     },
@@ -13,4 +7,4 @@ const storage = multer_1.default.diskStorage({
         callback(null, file.originalname);
     }
 });
-exports.singleUpload = (0, multer_1.default)({ storage }).array("pdf");
+export const singleUpload = multer({ storage }).array("pdf");
