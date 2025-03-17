@@ -15,7 +15,7 @@ exports.getNewNewspapers = (0, error_1.TryCatch)(async (req, res, next) => {
         return next(new utility_class_1.default("Please enter all Fields", 404));
     }
     const year = new Date(date).getFullYear();
-    const folderPath = path_1.default.join("C:/Users/HP/OneDrive/Desktop/internship/backend/Storage/Newspapers", String(year + 1), publication, unit, String(date));
+    const folderPath = path_1.default.join(process.env.FOLDER_PATH, String(year + 1), publication, unit, String(date));
     if (!fs_1.default.existsSync(folderPath)) {
         return next(new utility_class_1.default(`"Folder not found" ${folderPath}`, 404));
     }

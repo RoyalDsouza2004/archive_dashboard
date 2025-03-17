@@ -5,7 +5,6 @@ import morgan from 'morgan'
 //Importing routes
 
 import { errorMiddleware } from './middlewares/error.js';
-import { getConnection } from './utils/features.js';
 
 import newsPaperRoute from "./routes/newspaper.js"
 

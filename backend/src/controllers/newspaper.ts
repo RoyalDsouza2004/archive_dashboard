@@ -15,7 +15,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
 
       const year = new Date(date).getFullYear()
 
-      const folderPath = path.join("C:/Users/HP/OneDrive/Desktop/internship/backend/Storage/Newspapers", String(year + 1),publication, unit, String(date));
+      const folderPath = path.join(process.env.FOLDER_PATH!, String(year + 1),publication, unit, String(date));
 
 
       if (!fs.existsSync(folderPath)) {
