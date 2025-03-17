@@ -36,7 +36,7 @@ exports.addNewFiles = (0, error_1.TryCatch)(async (req, res, next) => {
     const conn = await (0, features_1.getConnection)();
     const [{ Sub_Edition_Id }] = await conn.query("SELECT Sub_Edition_Id FROM sub_edition WHERE Sub_Edition_Name = ? ", publication);
     const year = new Date(date).getFullYear();
-    const folderPath = path_1.default.join("C:/Users/HP/OneDrive/Desktop/internship/backend/Storage/Newspapers", String(year + 1), publication, unit, String(date));
+    const folderPath = path_1.default.join(process.env.FOLDER_PATH, String(year + 1), publication, unit, String(date));
     if (!fs_1.default.existsSync(folderPath)) {
         return next(new utility_class_1.default(`"Folder not found" ${folderPath}`, 404));
     }
