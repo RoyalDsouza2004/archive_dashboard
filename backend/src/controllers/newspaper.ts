@@ -17,7 +17,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
 
       const conn = await getConnection()
 
-      const publicationPromise = conn.query("select  Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
+      const publicationPromise = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
       const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` ,[publicationId.toUpperCase(), editionId.toUpperCase()])
@@ -26,7 +26,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
       const [[publication] , [edition]] = await Promise.all([publicationPromise , editionPromise])
 
 
-      const folderPath = path.join(process.env.FOLDER_PATH!, String(year + 1), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
+      const folderPath = path.join(process.env.FOLDER_PATH!, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
      
 
       if (!fs.existsSync(folderPath)) {
@@ -65,7 +65,7 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
       const [[publication] , [edition] ] = await Promise.all([publicationPromise , editionPromise])
 
 
-      const folderPath = path.join(process.env.FOLDER_PATH!, String(year+1), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
+      const folderPath = path.join(process.env.FOLDER_PATH!, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
      
 
       if (!fs.existsSync(folderPath)) {
@@ -76,18 +76,25 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
             return path.extname(file).toLowerCase() === ".pdf";
       });
 
-      const getPrefixSuffix = (filename: string) => {
-            const match = filename.match(/^([A-Za-z]+)\d{6}\d{2}([A-Za-z]+)\.pdf$/);
-            return match ? { prefix: match[1], sufix: match[2] } : null;
+      const getPrefixSuffixPage = (filename: string) => {
+            const match = filename.match(/^([A-Za-z]+)\d{6}(\d{2})([A-Za-z]+)\.pdf$/);
+        
+            return match
+                ? {
+                      prefix: match[1],        
+                      pageNo: parseInt(match[2], 10), 
+                      sufix: match[3],      
+                  }
+                : null;
         };
 
     
 
         const subEditionPromises = files.map(async (file) => {
-            const details = getPrefixSuffix(file);
-            if (!details) return { file, subEditionId: null };
+            const details = getPrefixSuffixPage(file);
+            if (!details) return { file, subEditionId: null , pageNo:1 };
     
-            const { prefix, sufix } = details;
+            const { prefix, sufix , pageNo } = details;
     
             const [result] = await conn.query(
                 `SELECT Sub_Edition_Id 
@@ -98,14 +105,14 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
             );
 
     
-            return { file, subEditionId: result.Sub_Edition_Id};
+            return { file, subEditionId: result.Sub_Edition_Id , pageNo};
         });
     
         const subEditionResults = await Promise.all(subEditionPromises);
         conn.end();
 
     
-        const uploadPromises = subEditionResults.map(({ file, subEditionId }) => {
+        const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
             if (!subEditionId) return next(new ErrorHandler("Sub Edition id not found for this file" , 400))
     
             const filePath = path.join(folderPath, file);
@@ -114,8 +121,8 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
             return insertLog({
                 subEditionId,
                 date: dateForDB,
-                pageNoFrom: 1,
-                pageNoTo: 1,
+                pageNoFrom: pageNo,
+                pageNoTo: pageNo,
                 filePath
             });
         });
