@@ -102,6 +102,8 @@ export const getPublication = TryCatch(async (req, res, next) => {
 });
 export const getEdition = TryCatch(async (req, res, next) => {
     const { publicationId } = req.query;
+    if (!publicationId)
+        return next(new ErrorHandler("Please provide Publication Id", 400));
     const conn = await getConnection();
     const editions = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id

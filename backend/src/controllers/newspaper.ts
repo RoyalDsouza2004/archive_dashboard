@@ -20,14 +20,14 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
       const publicationPromise = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
       const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
-            WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` ,[publicationId.toUpperCase(), editionId.toUpperCase()])
+            WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
       conn.end();
 
-      const [[publication] , [edition]] = await Promise.all([publicationPromise , editionPromise])
+      const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise])
 
 
       const folderPath = path.join(process.env.FOLDER_PATH!, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
-     
+
 
       if (!fs.existsSync(folderPath)) {
             return next(new ErrorHandler(`"Folder not found" ${folderPath}`, 404))
@@ -60,13 +60,13 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
       const publicationPromise = conn.query("select  Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
       const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
-            WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` ,[publicationId.toUpperCase(), editionId.toUpperCase()])
+            WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
 
-      const [[publication] , [edition] ] = await Promise.all([publicationPromise , editionPromise])
+      const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise])
 
 
       const folderPath = path.join(process.env.FOLDER_PATH!, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
-     
+
 
       if (!fs.existsSync(folderPath)) {
             return next(new ErrorHandler(`"Folder not found" ${folderPath}`, 404))
@@ -78,67 +78,67 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
 
       const getPrefixSuffixPage = (filename: string) => {
             const match = filename.match(/^([A-Za-z]+)\d{6}(\d{2})([A-Za-z]+)\.pdf$/);
-        
+
             return match
-                ? {
-                      prefix: match[1],        
-                      pageNo: parseInt(match[2], 10), 
-                      sufix: match[3],      
+                  ? {
+                        prefix: match[1],
+                        pageNo: parseInt(match[2], 10),
+                        sufix: match[3],
                   }
-                : null;
-        };
+                  : null;
+      };
 
-    
 
-        const subEditionPromises = files.map(async (file) => {
+
+      const subEditionPromises = files.map(async (file) => {
             const details = getPrefixSuffixPage(file);
-            if (!details) return { file, subEditionId: null , pageNo:1 };
-    
-            const { prefix, sufix , pageNo } = details;
-    
+            if (!details) return { file, subEditionId: null, pageNo: 1 };
+
+            const { prefix, sufix, pageNo } = details;
+
             const [result] = await conn.query(
-                `SELECT Sub_Edition_Id 
+                  `SELECT Sub_Edition_Id 
                  FROM pdf_naming 
                  WHERE Prefix = ? 
                  AND Sufix = ?`,
-                [prefix.toUpperCase(), sufix.toUpperCase()]
+                  [prefix.toUpperCase(), sufix.toUpperCase()]
             );
 
-    
-            return { file, subEditionId: result.Sub_Edition_Id , pageNo};
-        });
-    
-        const subEditionResults = await Promise.all(subEditionPromises);
-        conn.end();
 
-    
-        const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
-            if (!subEditionId) return next(new ErrorHandler("Sub Edition id not found for this file" , 400))
-    
+            return { file, subEditionId: result.Sub_Edition_Id, pageNo };
+      });
+
+      const subEditionResults = await Promise.all(subEditionPromises);
+      conn.end();
+
+
+      const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
+            if (!subEditionId) return next(new ErrorHandler("Sub Edition id not found for this file", 400))
+
             const filePath = path.join(folderPath, file);
             const dateForDB = new Date(date);
-    
+
             return insertLog({
-                subEditionId,
-                date: dateForDB,
-                pageNoFrom: pageNo,
-                pageNoTo: pageNo,
-                filePath
+                  subEditionId,
+                  date: dateForDB,
+                  pageNoFrom: pageNo,
+                  pageNoTo: pageNo,
+                  filePath
             });
-        });
-    
-        await Promise.all(uploadPromises.filter(Boolean));
+      });
+
+      await Promise.all(uploadPromises.filter(Boolean));
 
       return res.status(200).json({
-            success:true,
-            message:"Files uploaded successfully",
+            success: true,
+            message: "Files uploaded successfully",
             files
       })
 })
 
 
 export const getPublication = TryCatch(async (req, res, next) => {
-      
+
       const conn = await getConnection()
 
       const publications = await conn.query("select * from publication")
@@ -153,7 +153,9 @@ export const getPublication = TryCatch(async (req, res, next) => {
 
 export const getEdition = TryCatch(async (req, res, next) => {
 
-      const {publicationId} = req.query
+      const { publicationId } = req.query
+
+      if(!publicationId) return next(new ErrorHandler("Please provide Publication Id" , 400))
 
       const conn = await getConnection()
 
