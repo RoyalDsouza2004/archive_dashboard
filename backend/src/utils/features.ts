@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import dotenv from 'dotenv';
-import { UploadFilesType } from '../types/types.js';
+import { Edition, Publication, UploadFilesType, UploadRequestBody } from '../types/types.js';
 
 dotenv.config();
 
@@ -34,11 +34,20 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
       let conn;
       try {
             conn = await getConnection()
-            const query = `
-          INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
-          VALUES (?, ?, ?, ?, ?);
-        `;
-            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
+            var query;
+            if (subEditionId) {
+                  query = `
+            INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
+            VALUES (?, ?, ?, ?, ?);`;
+                  await conn.query(query!, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
+            } else {
+                  query = `
+                  INSERT INTO log (Date, Page_No_From, Page_No_To, path)
+                  VALUES (?, ?, ?, ?);
+                `;
+                await conn.query(query!, [date, pageNoFrom, pageNoTo, filePath]);
+            }
+
       } catch (err) {
             console.error(`Error inserting ${filePath}:`, err);
             throw err;
@@ -46,3 +55,15 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
             if (conn) conn.release();
       }
 }
+
+export const getPrefixSuffixPage = (filename: string) => {
+      const match = filename.match(/^([A-Za-z]+)\d{6}(\d{2})([A-Za-z]+)\.pdf$/);
+
+      return match
+            ? {
+                  prefix: match[1],
+                  pageNo: parseInt(match[2], 10),
+                  sufix: match[3],
+            }
+            : null;
+};

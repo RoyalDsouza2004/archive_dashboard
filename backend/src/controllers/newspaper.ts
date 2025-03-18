@@ -2,11 +2,11 @@ import { Request } from "express";
 import { TryCatch } from "../middlewares/error.js";
 import fs from "fs";
 import path from "path";
-import { Edition, NewNewspaperType, Publication } from "../types/types.js";
+import { Edition, UploadRequestBody, Publication } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { getConnection, insertLog } from "../utils/features.js";
+import { getConnection, getPrefixSuffixPage, insertLog } from "../utils/features.js";
 
-export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspaperType>, res, next) => {
+export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
       const { publicationId, date, editionId } = req.body;
 
       if (!editionId || !date || !publicationId) {
@@ -26,7 +26,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
       const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise])
 
 
-      const folderPath = path.join(process.env.FOLDER_PATH!, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
+      const folderPath = path.join(process.env.FOLDER_PATH!,"Newspapers", String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
 
 
       if (!fs.existsSync(folderPath)) {
@@ -46,7 +46,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
 
 })
 
-export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType>, res, next) => {
+export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
       const { publicationId, date, editionId } = req.body;
 
       if (!editionId || !date || !publicationId) {
@@ -76,18 +76,7 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
             return path.extname(file).toLowerCase() === ".pdf";
       });
 
-      const getPrefixSuffixPage = (filename: string) => {
-            const match = filename.match(/^([A-Za-z]+)\d{6}(\d{2})([A-Za-z]+)\.pdf$/);
-
-            return match
-                  ? {
-                        prefix: match[1],
-                        pageNo: parseInt(match[2], 10),
-                        sufix: match[3],
-                  }
-                  : null;
-      };
-
+      
 
 
       const subEditionPromises = files.map(async (file) => {
@@ -137,36 +126,3 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
 })
 
 
-export const getPublication = TryCatch(async (req, res, next) => {
-
-      const conn = await getConnection()
-
-      const publications:Publication[] = await conn.query("select * from publication")
-      conn.end()
-
-      res.status(200).json({
-            success: true,
-            publications
-      });
-
-})
-
-export const getEdition = TryCatch(async (req, res, next) => {
-
-      const { publicationId } = req.query
-
-      if(!publicationId) return next(new ErrorHandler("Please provide Publication Id" , 400))
-
-      const conn = await getConnection()
-
-      const editions:Edition[] = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
-            JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
-            WHERE pe.Publication_Id = ?;` , publicationId)
-      conn.end()
-
-      res.status(200).json({
-            success: true,
-            editions
-      });
-
-})

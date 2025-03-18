@@ -8,14 +8,15 @@ export type ControllerType = (
 
 
 
-export interface NewNewspaperType {
+export interface UploadRequestBody {
   editionId:string,
   publicationId: string,
   date: Date,
+  pages?: { pageFrom: number; pageTo: number }[] | string[];
 }
 
 export type UploadFilesType = {
-  subEditionId: string,
+  subEditionId: string | null,
   date: Date,
   pageNoFrom: number,
   pageNoTo: number,
@@ -29,5 +30,12 @@ export type Publication = {
 
 export type Edition = { 
   Edition_Name: string,
-  Edition_Id:string
+  Edition_Id?:string
  };
+
+ export interface CustomRequest extends Request {
+  body:UploadRequestBody;
+  publicationName?: string;
+  editionName?: string;
+}
+
