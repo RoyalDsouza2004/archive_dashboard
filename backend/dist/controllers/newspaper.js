@@ -36,7 +36,7 @@ export const addNewFiles = TryCatch(async (req, res, next) => {
     }
     const year = new Date(date).getFullYear();
     const conn = await getConnection();
-    const publicationPromise = conn.query("select  Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase());
+    const publicationPromise = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase());
     const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?`, [publicationId.toUpperCase(), editionId.toUpperCase()]);

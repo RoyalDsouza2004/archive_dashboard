@@ -2,7 +2,7 @@ import { Request } from "express";
 import { TryCatch } from "../middlewares/error.js";
 import fs from "fs";
 import path from "path";
-import { NewNewspaperType } from "../types/types.js";
+import { Edition, NewNewspaperType, Publication } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, insertLog } from "../utils/features.js";
 
@@ -17,8 +17,8 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, NewNewspape
 
       const conn = await getConnection()
 
-      const publicationPromise = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
-      const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
+      const publicationPromise:Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
+      const editionPromise: Promise<Edition[]> = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
       conn.end();
@@ -57,8 +57,8 @@ export const addNewFiles = TryCatch(async (req: Request<{}, {}, NewNewspaperType
 
       const conn = await getConnection()
 
-      const publicationPromise = conn.query("select  Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
-      const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
+      const publicationPromise:Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
+      const editionPromise: Promise<Edition[]> = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
 
