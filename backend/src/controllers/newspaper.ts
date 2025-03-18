@@ -141,7 +141,7 @@ export const getPublication = TryCatch(async (req, res, next) => {
 
       const conn = await getConnection()
 
-      const publications = await conn.query("select * from publication")
+      const publications:Publication[] = await conn.query("select * from publication")
       conn.end()
 
       res.status(200).json({
@@ -159,7 +159,7 @@ export const getEdition = TryCatch(async (req, res, next) => {
 
       const conn = await getConnection()
 
-      const editions = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
+      const editions:Edition[] = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ?;` , publicationId)
       conn.end()

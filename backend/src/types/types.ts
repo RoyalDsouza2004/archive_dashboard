@@ -22,5 +22,12 @@ export type UploadFilesType = {
   filePath: string
 }
 
-export type Publication = { Publication_Name: string };
-export type Edition = { Edition_Name: string };
+export type Publication = {
+   Publication_Name: string,
+   Publication_Id?:string
+  };
+
+export type Edition = { 
+  Edition_Name: string,
+  Edition_Id:string
+ };
