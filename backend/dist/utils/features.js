@@ -21,7 +21,7 @@ export const getConnection = async () => {
         throw err;
     });
 };
-export const insertLog = async ({ Sub_Edition_Id, date, Page_No_From, Page_No_To, filePath }) => {
+export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath }) => {
     let conn;
     try {
         conn = await getConnection();
@@ -29,7 +29,7 @@ export const insertLog = async ({ Sub_Edition_Id, date, Page_No_From, Page_No_To
           INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
           VALUES (?, ?, ?, ?, ?);
         `;
-        await conn.query(query, [Sub_Edition_Id, date, Page_No_From, Page_No_To, filePath]);
+        await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
     }
     catch (err) {
         console.error(`Error inserting ${filePath}:`, err);
