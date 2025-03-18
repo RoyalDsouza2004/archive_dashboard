@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(morgan("dev"))
 
 
-app.use("/api/v1" , newsPaperRoute)
+app.use("/api/v1/news-papers" , newsPaperRoute)
 
 
 app.get('/', (req, res) => {

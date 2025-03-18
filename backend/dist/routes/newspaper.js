@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { addNewFiles, getNewNewspapers } from "../controllers/newspaper.js";
+import { addNewFiles, getEdition, getNewNewspapers, getPublication } from "../controllers/newspaper.js";
 const router = Router();
-router.get("/getNewFiles", getNewNewspapers);
+router.get("/get-new-files", getNewNewspapers);
 router.post("/add-files", addNewFiles);
+router.get("/get-publication", getPublication);
+router.get("/get-edition", getEdition);
 export default router;
