@@ -12,7 +12,7 @@ export interface UploadRequestBody {
   editionId:string,
   publicationId: string,
   date: Date,
-  pages?: { pageFrom: number; pageTo: number }[] | string[];
+  pages?: { pageNoFrom: number; pageNoTo: number }[] | string[];
 }
 
 export type UploadFilesType = {

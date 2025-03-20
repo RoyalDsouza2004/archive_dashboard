@@ -1,4 +1,3 @@
-
 import { TryCatch } from "../middlewares/error.js";
 import { UploadRequestBody } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
@@ -20,6 +19,10 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
             return next(new ErrorHandler("All fields are required", 400));
       }
 
+      const conn = await getConnection();
+
+      
+
       const parsedPages = pages.map(page => {
             if (typeof page === "string") {
                   return JSON.parse(page.replace(/(\w+):/g, '"$1":'));
@@ -27,7 +30,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
             return pages;
       });
 
-      const conn = await getConnection();
+      
 
       const [subEditionId] = await conn.query(`SELECT Sub_Edition_Id 
             FROM sub_edition 
@@ -40,13 +43,13 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
 
       const insertPromises = files.map(async (file, index) => {
 
-            const { pageFrom, pageTo } = parsedPages[index] || { pageFrom: 1, pageTo: 1 };
+            const { pageNoFrom, pageNoTo } = parsedPages[index] || { pageNoFrom: 1, pageNoTo: 1 };
 
             await insertLog({
                   subEditionId: subEditionId.Sub_Edition_Id,
-                  date: new Date(date),
-                  pageNoFrom: pageFrom,
-                  pageNoTo: pageTo,
+                  date,
+                  pageNoFrom,
+                  pageNoTo,
                   filePath: file.path,
             });
       });
@@ -57,7 +60,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
       return res.status(200).json({
             success: true,
             message: "File uploaded successfully",
-            folderPath
+            totalFiles: files.length
       });
 
 

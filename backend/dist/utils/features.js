@@ -25,20 +25,16 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
     let conn;
     try {
         conn = await getConnection();
-        var query;
-        if (subEditionId) {
-            query = `
+        const [existing] = await conn.query(`SELECT COUNT(*) AS count FROM log 
+                   WHERE Sub_Edition_Id = ? AND Date = ? AND Page_No_From = ? AND Page_No_To = ?`, [subEditionId, date, pageNoFrom, pageNoTo]);
+        if (existing.count > 0) {
+            console.log(`Skipping duplicate entry for Sub_Edition_Id: ${subEditionId}, Page_No: ${pageNoFrom}-${pageNoTo}`);
+            return;
+        }
+        const query = `
             INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
             VALUES (?, ?, ?, ?, ?);`;
-            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
-        }
-        else {
-            query = `
-                  INSERT INTO log (Date, Page_No_From, Page_No_To, path)
-                  VALUES (?, ?, ?, ?);
-                `;
-            await conn.query(query, [date, pageNoFrom, pageNoTo, filePath]);
-        }
+        await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
     }
     catch (err) {
         console.error(`Error inserting ${filePath}:`, err);

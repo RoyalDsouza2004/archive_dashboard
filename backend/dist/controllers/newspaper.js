@@ -65,10 +65,9 @@ export const addNewNewsPapers = TryCatch(async (req, res, next) => {
         if (!subEditionId)
             return next(new ErrorHandler("Sub Edition id not found for this file", 400));
         const filePath = path.join(folderPath, file);
-        const dateForDB = new Date(date);
         return insertLog({
             subEditionId,
-            date: dateForDB,
+            date,
             pageNoFrom: pageNo,
             pageNoTo: pageNo,
             filePath
@@ -78,6 +77,6 @@ export const addNewNewsPapers = TryCatch(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Files uploaded successfully",
-        files
+        totalFiles: files.length
     });
 });
