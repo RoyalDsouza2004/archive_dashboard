@@ -3,10 +3,10 @@ import fs from 'fs'
 import path from "path";
 import { getConnection } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { CustomRequest, Edition, Publication } from "../types/types.js";
+import { Edition, Publication } from "../types/types.js";
 
 const storage = multer.diskStorage({
-      destination: async (req:CustomRequest, file, callback) => {
+      destination: async (req, file, callback) => {
             try {
                   const { publicationId, editionId, date } = req.body;
 
@@ -16,7 +16,6 @@ const storage = multer.diskStorage({
 
                   const conn = await getConnection();
 
-                  // Fetch publication name
                   const publicationPromise: Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
                   const editionPromise: Promise<Edition[]> = conn.query(`SELECT e.Edition_Name FROM edition e 
                           JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
@@ -30,14 +29,10 @@ const storage = multer.diskStorage({
                   if (!publication || !edition) {
                         return callback(new ErrorHandler("Publication or Edition not found", 400), "");
                   }
-                  req.publicationName = publication.Publication_Name
-                  req.editionName = edition.Edition_Name
-
 
                   const year = new Date(date).getFullYear();
                   const uploadDir = path.join(
                         process.env.FOLDER_PATH!,
-                        "Magazines",
                         String(year),
                         publication.Publication_Name,
                         edition.Edition_Name.toLowerCase(),

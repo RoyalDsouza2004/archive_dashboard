@@ -16,7 +16,7 @@ export const getNewNewspapers = TryCatch(async (req, res, next) => {
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?`, [publicationId.toUpperCase(), editionId.toUpperCase()]);
     conn.end();
     const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise]);
-    const folderPath = path.join(process.env.FOLDER_PATH, "Newspapers", String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
+    const folderPath = path.join(process.env.FOLDER_PATH, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
     if (!fs.existsSync(folderPath)) {
         return next(new ErrorHandler(`"Folder not found" ${folderPath}`, 404));
     }

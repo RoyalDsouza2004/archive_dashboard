@@ -33,9 +33,5 @@ export type Edition = {
   Edition_Id?:string
  };
 
- export interface CustomRequest extends Request {
-  body:UploadRequestBody;
-  publicationName?: string;
-  editionName?: string;
-}
+
 
