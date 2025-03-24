@@ -100,7 +100,7 @@ export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadReque
       const subEditionResults = await Promise.all(subEditionPromises);
       conn.end();
 
-
+      const skippedEntries: string[] = [];
       const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
             if (!subEditionId) return next(new ErrorHandler("Sub Edition id not found for this file", 400))
 
@@ -112,15 +112,18 @@ export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadReque
                   pageNoFrom: pageNo,
                   pageNoTo: pageNo,
                   filePath
-            });
+            }, skippedEntries);
       });
 
       await Promise.all(uploadPromises.filter(Boolean));
 
+      const totalFiles =files.length - skippedEntries.length
+
       return res.status(200).json({
             success: true,
-            message: "Files uploaded successfully",
-            totalFiles:files.length
+            message: totalFiles? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
+            totalFiles,
+            skippedEntries
       })
 })
 

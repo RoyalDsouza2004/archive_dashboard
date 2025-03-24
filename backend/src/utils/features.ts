@@ -30,30 +30,30 @@ export const getConnection = async () => {
 };
 
 
-export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath }: UploadFilesType) => {
+export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath }: UploadFilesType, skippedEntries: string[]) => {
       let conn;
       try {
-            conn = await getConnection()
+            conn = await getConnection();
+
 
             const [existing] = await conn.query(
                   `SELECT COUNT(*) AS count FROM log 
-                   WHERE Sub_Edition_Id = ? AND Date = ? AND Page_No_From = ? AND Page_No_To = ?`,
-                  [subEditionId,date, pageNoFrom, pageNoTo]
+               WHERE Sub_Edition_Id = ? AND Date = ? AND Page_No_From = ? AND Page_No_To = ?`,
+                  [subEditionId, date, pageNoFrom, pageNoTo]
             );
 
             if (existing.count > 0) {
-                  console.log(`Skipping duplicate entry for Sub_Edition_Id: ${subEditionId}, Page_No: ${pageNoFrom}-${pageNoTo}`);
+                  const skipMessage = `Skipping duplicate entry for Sub_Edition_Id: ${subEditionId}, Page_No: ${pageNoFrom}-${pageNoTo}`;
+                  console.log(skipMessage);
+                  skippedEntries.push(skipMessage)
                   return;
             }
 
-            
-
             const query = `
-            INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
-            VALUES (?, ?, ?, ?, ?);`;
+          INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
+          VALUES (?, ?, ?, ?, ?);`;
 
-
-            await conn.query(query!, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
+            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
 
       } catch (err) {
             console.error(`Error inserting ${filePath}:`, err);
@@ -61,7 +61,7 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
       } finally {
             if (conn) conn.release();
       }
-}
+};
 
 export const getPrefixSuffixPage = (filename: string) => {
       const match = filename.match(/^([A-Za-z]+)\d{6}(\d{2})([A-Za-z]+)\.pdf$/);
