@@ -6,6 +6,7 @@ import { errorMiddleware } from './middlewares/error.js';
 import newsPaperRoute from "./routes/newspaper.js";
 import magazinesRoute from "./routes/magazines.js";
 import paperRoute from "./routes/papers.js";
+import userRoute from "./routes/user.js";
 const port = process.env.PORT || 4000;
 export const nodeCache = new NodeCache();
 const app = express();
@@ -14,6 +15,7 @@ app.use(morgan("dev"));
 app.use("/api/v1/news-papers", newsPaperRoute);
 app.use("/api/v1/magazines", magazinesRoute);
 app.use("/api/v1/papers", paperRoute);
+app.use("/api/v1/user", userRoute);
 app.get('/', (req, res) => {
     res.send("Api working");
 });

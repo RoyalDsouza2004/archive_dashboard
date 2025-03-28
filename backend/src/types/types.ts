@@ -33,3 +33,16 @@ export type Edition = {
   Edition_Id?:string
  };
 
+ 
+ export interface PermissionType {
+  publicationId: string;
+  editionId: string;
+  permission: "r" | "w" | "rw";
+}
+
+ export interface UserType {
+  userId: string;
+  userName: string;
+  password: string;
+  permissions?: PermissionType[];
+}
