@@ -1,12 +1,15 @@
 import { Router } from "express"
-import { getEdition, getPublication } from "../controllers/paper.js"
+import { getEdition, getPublication  , searchPapers} from "../controllers/paper.js"
 
 const router = Router()
 
 //api/v1/papers/get-publication
 router.get("/get-publication" , getPublication)
 
-//api/v1/news-papers/get-edition?publicationId=id
+//api/v1/papers/get-edition?publicationId=id
 router.get("/get-edition" ,getEdition )
+
+//api/v1/papers/search?
+router.get("/search" , searchPapers)
 
 export default router
