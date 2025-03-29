@@ -41,7 +41,7 @@ export type Edition = {
 }
 
  export interface UserType {
-  userId: string;
+  email: string;
   userName: string;
   password: string;
   permissions?: PermissionType[];

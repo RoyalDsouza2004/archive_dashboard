@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { addUser, getUser } from "../controllers/user.js";
+import { addOrUpdateUserPermission, addUser, getAllUsers, getUser } from "../controllers/user.js";
 
 const router = Router()
 
 router.post('/new' , addUser);
-router.get('/:userId' , getUser);
+router.get('/all' , getAllUsers);
+router.route('/:userId').get(getUser).put(addOrUpdateUserPermission)
 
 
 export default router;
