@@ -5,6 +5,7 @@ import { PermissionType, UserType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import jwt from "jsonwebtoken"
 
 export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next) => {
 
@@ -54,6 +55,55 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
     })
 
 })
+
+export const loginUser = TryCatch(async (req: Request, res, next) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return next(new ErrorHandler("Please provide email and password", 400));
+    }
+
+    const conn = await getConnection();
+
+
+    const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email]);
+
+    if (!user) {
+        return next(new ErrorHandler("Invalid Email or Password", 401));
+    }
+
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) {
+        return next(new ErrorHandler("Invalid Email or Password", 401));
+    }
+
+    const permissionsResults = await conn.query(
+        "SELECT Publication_Id, Edition_Id, permission FROM user_permission WHERE User_Id = ?",
+        [user.User_Id]
+    );
+
+    const permissions = permissionsResults.map((perm: any) => ({
+        publicationId: perm.Publication_Id,
+        editionId: perm.Edition_Id,
+        permission: perm.permission,
+    }));
+
+    const token = jwt.sign({ userId: user.User_Id }, process.env.JWT_SECRET as string, {
+        expiresIn: "7d",
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Login Successful",
+        token,
+        user: {
+            userId: user.User_Id,
+            userName: user.User_Name,
+            email: user.Email,
+            permissions: permissions,
+        },
+    });
+});
 
 export const getUser = TryCatch(async (req, res, next) => {
     const { userId } = req.params;
