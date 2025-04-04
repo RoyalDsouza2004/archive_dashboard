@@ -3,7 +3,8 @@ import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, insertLog } from "../utils/features.js";
 import fs from "fs";
 export const addNewMagazines = TryCatch(async (req, res, next) => {
-    const { date, editionId, pages, publicationId } = req.body;
+    const { publicationId, editionId } = req.query;
+    const { date, pages } = req.body;
     const files = req.files;
     const folderPath = files[0].destination;
     if (!publicationId || !editionId || !date || !pages || !files.length) {

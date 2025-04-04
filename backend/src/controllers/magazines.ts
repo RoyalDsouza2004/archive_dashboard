@@ -7,7 +7,8 @@ import fs from "fs"
 
 export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
 
-      const { date, editionId, pages, publicationId } = req.body;
+      const { publicationId, editionId } = req.query;
+      const { date, pages } = req.body;
       const files = req.files as Express.Multer.File[]
 
       const folderPath = files[0].destination;
@@ -21,7 +22,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
 
       const conn = await getConnection();
 
-      
+
 
       const parsedPages = pages.map(page => {
             if (typeof page === "string") {
@@ -30,15 +31,15 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
             return pages;
       });
 
-      
+
 
       const [subEditionId] = await conn.query(`SELECT Sub_Edition_Id 
             FROM sub_edition 
             WHERE Publication_Id = ? AND Edition_Id = ?;` , [publicationId, editionId])
 
-      if(!subEditionId) {
+      if (!subEditionId) {
             fs.rmSync(folderPath, { recursive: true, force: true });
-            return next(new ErrorHandler("SubEdition id is not found" , 400))
+            return next(new ErrorHandler("SubEdition id is not found", 400))
       }
 
       const skippedEntries: string[] = [];
@@ -58,11 +59,11 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
       await Promise.all(insertPromises);
       conn.end();
 
-      const totalFiles =files.length - skippedEntries.length
+      const totalFiles = files.length - skippedEntries.length
 
       return res.status(200).json({
             success: true,
-            message: totalFiles? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
+            message: totalFiles ? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
             totalFiles,
             skippedEntries
       })

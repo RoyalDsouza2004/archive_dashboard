@@ -7,6 +7,7 @@ import newsPaperRoute from "./routes/newspaper.js";
 import magazinesRoute from "./routes/magazines.js";
 import paperRoute from "./routes/papers.js";
 import userRoute from "./routes/user.js";
+import { readRoute } from './middlewares/auth.js';
 const port = process.env.PORT || 4000;
 export const nodeCache = new NodeCache();
 const app = express();
@@ -19,7 +20,7 @@ app.use("/api/v1/user", userRoute);
 app.get('/', (req, res) => {
     res.send("Api working");
 });
-app.use("/papers", express.static("storage"));
+app.use("/papers", readRoute, express.static(process.env.FOLDER_PATH));
 app.use(errorMiddleware);
 app.listen(port, () => {
     console.log(`server is working on http://localhost:${port}`);

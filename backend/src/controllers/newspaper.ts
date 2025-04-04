@@ -7,7 +7,11 @@ import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, getPrefixSuffixPage, insertLog } from "../utils/features.js";
 
 export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
-      const { publicationId, date, editionId } = req.body;
+      const { publicationId, editionId } = req.query as {
+            editionId?: string;
+            publicationId?: string;
+      };
+      const { date } = req.body;
 
       if (!editionId || !date || !publicationId) {
             return next(new ErrorHandler("Please enter all Fields", 404))
@@ -17,7 +21,7 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, UploadReque
 
       const conn = await getConnection()
 
-      const publicationPromise:Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
+      const publicationPromise: Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
       const editionPromise: Promise<Edition[]> = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
@@ -47,7 +51,12 @@ export const getNewNewspapers = TryCatch(async (req: Request<{}, {}, UploadReque
 })
 
 export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
-      const { publicationId, date, editionId } = req.body;
+      const { publicationId, editionId } = req.query as {
+            editionId?: string;
+            publicationId?: string;
+      };
+      
+      const { date } = req.body;
 
       if (!editionId || !date || !publicationId) {
             return next(new ErrorHandler("Please enter all Fields", 404))
@@ -57,7 +66,7 @@ export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadReque
 
       const conn = await getConnection()
 
-      const publicationPromise:Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
+      const publicationPromise: Promise<Publication[]> = conn.query("select Publication_Name from publication where Publication_Id = ?", publicationId.toUpperCase())
       const editionPromise: Promise<Edition[]> = conn.query(`SELECT e.Edition_Name FROM edition e 
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?` , [publicationId.toUpperCase(), editionId.toUpperCase()])
@@ -75,8 +84,6 @@ export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadReque
       const files = fs.readdirSync(folderPath).filter((file) => {
             return path.extname(file).toLowerCase() === ".pdf";
       });
-
-      
 
 
       const subEditionPromises = files.map(async (file) => {
@@ -117,11 +124,11 @@ export const addNewNewsPapers = TryCatch(async (req: Request<{}, {}, UploadReque
 
       await Promise.all(uploadPromises.filter(Boolean));
 
-      const totalFiles =files.length - skippedEntries.length
+      const totalFiles = files.length - skippedEntries.length
 
       return res.status(200).json({
             success: true,
-            message: totalFiles? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
+            message: totalFiles ? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
             totalFiles,
             skippedEntries
       })

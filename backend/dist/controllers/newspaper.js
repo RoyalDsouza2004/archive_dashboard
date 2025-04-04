@@ -4,7 +4,8 @@ import path from "path";
 import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, getPrefixSuffixPage, insertLog } from "../utils/features.js";
 export const getNewNewspapers = TryCatch(async (req, res, next) => {
-    const { publicationId, date, editionId } = req.body;
+    const { publicationId, editionId } = req.query;
+    const { date } = req.body;
     if (!editionId || !date || !publicationId) {
         return next(new ErrorHandler("Please enter all Fields", 404));
     }
@@ -30,7 +31,8 @@ export const getNewNewspapers = TryCatch(async (req, res, next) => {
     });
 });
 export const addNewNewsPapers = TryCatch(async (req, res, next) => {
-    const { publicationId, date, editionId } = req.body;
+    const { publicationId, editionId } = req.query;
+    const { date } = req.body;
     if (!editionId || !date || !publicationId) {
         return next(new ErrorHandler("Please enter all Fields", 404));
     }

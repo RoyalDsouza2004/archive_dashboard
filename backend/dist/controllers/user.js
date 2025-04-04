@@ -3,7 +3,6 @@ import { getConnection } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import jwt from "jsonwebtoken";
 export const addUser = TryCatch(async (req, res, next) => {
     const { email, userName, password, permissions } = req.body;
     if (!email || !userName || !password) {
@@ -54,13 +53,9 @@ export const loginUser = TryCatch(async (req, res, next) => {
         editionId: perm.Edition_Id,
         permission: perm.permission,
     }));
-    const token = jwt.sign({ userId: user.User_Id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-    });
     return res.status(200).json({
         success: true,
         message: "Login Successful",
-        token,
         user: {
             userId: user.User_Id,
             userName: user.User_Name,

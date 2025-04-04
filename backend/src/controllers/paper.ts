@@ -38,13 +38,6 @@ export const getEdition = TryCatch(async (req, res, next) => {
 
 })
 
-interface LogEntry {
-      SubEditionName: string;
-      subEditionId: string;
-      Page: number;
-      Path: string;
-  }
-
 export const searchPapers = TryCatch(async (req, res:Response, next:NextFunction) => {
       const { editionId, subEditionId, publicationId, date } = req.query as {
             editionId?: string;

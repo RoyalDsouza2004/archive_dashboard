@@ -9,8 +9,6 @@ export type ControllerType = (
 
 
 export interface UploadRequestBody {
-  editionId:string,
-  publicationId: string,
   date: Date,
   pages?: { pageNoFrom: number; pageNoTo: number }[] | string[];
 }

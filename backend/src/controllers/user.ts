@@ -88,14 +88,11 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         permission: perm.permission,
     }));
 
-    const token = jwt.sign({ userId: user.User_Id }, process.env.JWT_SECRET as string, {
-        expiresIn: "7d",
-    });
+
 
     return res.status(200).json({
         success: true,
         message: "Login Successful",
-        token,
         user: {
             userId: user.User_Id,
             userName: user.User_Name,

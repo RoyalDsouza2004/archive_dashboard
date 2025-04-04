@@ -9,6 +9,7 @@ import newsPaperRoute from "./routes/newspaper.js"
 import magazinesRoute from "./routes/magazines.js"
 import paperRoute from "./routes/papers.js"
 import userRoute from "./routes/user.js"
+import { readRoute } from './middlewares/auth.js';
 
 
 const port = process.env.PORT || 4000
@@ -33,7 +34,7 @@ app.get('/', (req, res) => {
 })
 
 
-app.use("/papers", express.static("storage"))
+app.use("/papers" ,readRoute, express.static(process.env.FOLDER_PATH as string))
 
 app.use(errorMiddleware)
 
