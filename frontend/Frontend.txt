@@ -1,5 +1,0 @@
-1. Login page.
-2. Archive page.
-3. Search page.
-4. Import page.
-5. Admin page.

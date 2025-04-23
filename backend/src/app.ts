@@ -1,6 +1,6 @@
 import express from 'express'
-import NodeCache from 'node-cache';
-import morgan from 'morgan'
+import morgan from 'morgan';
+import cors from "cors"
 
 //Importing routes
 
@@ -14,11 +14,19 @@ import { readRoute } from './middlewares/auth.js';
 
 const port = process.env.PORT || 4000
 
-export const nodeCache = new NodeCache()
 
 const app = express()
 
 app.use(express.json());
+
+
+app.use(
+      cors({
+            origin: [ 'http://localhost:3000'],
+            methods: ["GET", "POST", "PUT", "DELETE"],
+            credentials:true
+      })
+);
 
 app.use(morgan("dev"))
 
