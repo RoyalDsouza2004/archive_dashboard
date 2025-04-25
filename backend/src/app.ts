@@ -1,6 +1,7 @@
 import express from 'express'
 import morgan from 'morgan';
 import cors from "cors"
+import cookieParser from 'cookie-parser';
 
 //Importing routes
 
@@ -16,6 +17,8 @@ const port = process.env.PORT || 4000
 
 
 const app = express()
+
+app.use(cookieParser())
 
 app.use(express.json());
 
@@ -42,7 +45,7 @@ app.get('/', (req, res) => {
 })
 
 
-app.use("/papers" ,readRoute, express.static(process.env.FOLDER_PATH as string))
+app.use("/storage" ,readRoute, express.static(process.env.FOLDER_PATH as string))
 
 app.use(errorMiddleware)
 

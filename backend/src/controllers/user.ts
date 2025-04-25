@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { TryCatch } from "../middlewares/error.js";
-import { getConnection } from "../utils/features.js";
+import { getConnection, sendCookie } from "../utils/features.js";
 import { PermissionType, UserType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
@@ -90,16 +90,8 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
 
 
 
-    return res.status(200).json({
-        success: true,
-        message: "Login Successful",
-        user: {
-            userId: user.User_Id,
-            userName: user.User_Name,
-            email: user.Email,
-            permissions: permissions,
-        },
-    });
+   sendCookie(user , res , `Welcome back ${user.User_Name}` , 200 , permissions);
+
 });
 
 export const getUser = TryCatch(async (req, res, next) => {
