@@ -1,21 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Loading from "./components/Loading";
+import Search from "./pages/Search";
+import ENewspaper from "./pages/Archive/ENewspaper";
+import EMagazine from "./pages/Archive/EMagazine";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
-
-const Home = () => {
-  return (
-    <div className="p-10 text-2xl">
-      ✅ Welcome to the Home Page!
-    </div>
-  );
-};
+import axios from "./api/axios";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
+  const [loading, setLoading] = useState(true);
+
+  const checkAuth = async () => {
+    try {
+      const res = await axios.get("/auth/check");
+      setIsLoggedIn(res.data.authenticated);
+    } catch (err) {
+      setIsLoggedIn(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return isLoggedIn ? <Home /> : <Login onLoginSuccess={handleLoginSuccess} />;
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  if (loading) return <Loading />;
+
+  return (
+    <Routes>
+      {isLoggedIn ? (
+        <Route path="/" element={<Layout />}>
+          <Route path="search" element={<Search />} />
+          <Route path="archive">
+            <Route path="e-newspaper" element={<ENewspaper />} />
+            <Route path="e-magazine" element={<EMagazine />} />
+          </Route>
+          <Route path="profile" element={<Profile />} />
+        </Route>
+      ) : (
+        <Route path="*" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} />} />
+      )}
+    </Routes>
+  );
 };
 
 export default App;

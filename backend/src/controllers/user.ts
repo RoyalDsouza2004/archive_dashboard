@@ -1,10 +1,11 @@
-import { Request } from "express";
+import { Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.js";
 import { getConnection, sendCookie } from "../utils/features.js";
 import { PermissionType, UserType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import jwt from "jsonwebtoken"
 
 
 export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next) => {
@@ -90,7 +91,7 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
 
 
 
-   sendCookie(user , res , `Welcome back ${user.User_Name}` , 200 , permissions);
+    sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
 
 });
 
@@ -222,5 +223,3 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
         users: formattedUsers,
     });
 })
-
-

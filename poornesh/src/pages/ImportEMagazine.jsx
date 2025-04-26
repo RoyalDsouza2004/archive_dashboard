@@ -15,17 +15,10 @@ const ImportEMagazine = () => {
   });
   const [error, setError] = useState("");
 
-  // Fetch publications on component mount
   useEffect(() => {
     const fetchPublications = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/v1/papers/get-publication', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          timeout: 10000
-        });
+        const response = await axios.get('http://localhost:4000/api/v1/papers/get-publication');
 
         if (!response.data?.success) {
           throw new Error('Invalid response format');
@@ -47,7 +40,6 @@ const ImportEMagazine = () => {
     fetchPublications();
   }, []);
 
-  // Fetch editions when publication changes
   useEffect(() => {
     const fetchEditions = async () => {
       if (!publicationId) return;
@@ -57,13 +49,7 @@ const ImportEMagazine = () => {
       setEditionId("");
 
       try {
-        const response = await axios.get(`http://localhost:4000/api/v1/papers/get-edition?publicationId=${publicationId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          timeout: 10000
-        });
+        const response = await axios.get(`http://localhost:4000/api/v1/papers/get-edition?publicationId=${publicationId}`);
 
         if (!response.data?.success) {
           throw new Error('Invalid editions response format');
@@ -83,7 +69,6 @@ const ImportEMagazine = () => {
   }, [publicationId]);
 
 
-  // Row management
   const addRow = () => {
     setRows([...rows, { id: rows.length + 1, from: "", to: "", file: null }]);
   };
@@ -128,20 +113,16 @@ const ImportEMagazine = () => {
         formData.append("files", row.file);
       });
 
-      // API call
+    
       const response = await axios.post(
         `http://localhost:4000/api/v1/magazines/add-files?publicationId=${publicationId}&editionId=${editionId}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+        formData);
 
-      // Handle response
       alert(response.data.message);
       if (response.data.skippedEntries?.length) {
         alert(`Skipped entries: ${response.data.skippedEntries.join(", ")}`);
       }
 
-      // Reset form
       setPublicationId("");
       setEditionId("");
       setPublishDate("");

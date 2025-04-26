@@ -1,7 +1,8 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import morgan from 'morgan';
 import cors from "cors"
 import cookieParser from 'cookie-parser';
+import jwt from "jsonwebtoken"
 
 //Importing routes
 
@@ -25,7 +26,7 @@ app.use(express.json());
 
 app.use(
       cors({
-            origin: [ 'http://localhost:5173'],
+            origin: [ 'http://localhost:5173', process.env.FRONTEND_URL as string],
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials:true
       })
@@ -44,8 +45,25 @@ app.get('/', (req, res) => {
       res.send("Api working")
 })
 
+app.get("/api/v1/auth/check", (req, res) => {
+      const token = req.cookies.token;
+      
+      if (!token) {
+        res.json({ authenticated: false });
+      }
+    
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id:string}
+        res.json({ authenticated: true, userId: decoded.id }) 
+      } catch (err) {
+         res.json({ authenticated: false });
+      }
+    });
+    
+
 
 app.use("/storage" ,readRoute, express.static(process.env.FOLDER_PATH as string))
+
 
 app.use(errorMiddleware)
 
