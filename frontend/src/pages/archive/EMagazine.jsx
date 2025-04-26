@@ -1,5 +1,6 @@
 import axios from "../../api/axios";
 import { useState, useEffect } from "react";
+import PublicationEditionForm from "../../components/SelectForm";
 
 const EMagazine = () => {
       const [rows, setRows] = useState([{ id: 1, from: "", to: "", file: null }]);
@@ -13,6 +14,7 @@ const EMagazine = () => {
             editions: false
       });
       const [error, setError] = useState("");
+      const [isSubmitting, setIsSubmitting] = useState(false);
 
       useEffect(() => {
             const fetchPublications = async () => {
@@ -88,6 +90,8 @@ const EMagazine = () => {
 
       // Form submission
       const handleSubmit = async () => {
+            setIsSubmitting(true)
+
             try {
                   if (!publicationId || !editionId || !publishDate) {
                         throw new Error("Please fill all required fields!");
@@ -143,6 +147,8 @@ const EMagazine = () => {
             } catch (error) {
                   console.error("Submission error:", error);
                   alert(error.response?.data?.message || error.message || "Submission failed");
+            } finally {
+                  setIsSubmitting(false)
             }
       };
 
@@ -151,56 +157,18 @@ const EMagazine = () => {
                   <h2 className="text-lg sm:text-xl md:text-2xl px-6 font-bold mt-4 mb-2">📖 Import E-Magazine</h2>
 
                   <div className="px-6 flex flex-col items-center">
-                        <div className="bg-gray-100 font-semibold text-sm md:text-lg p-4 rounded-lg shadow-md w-full max-w-lg">
-                              {/* Publication Dropdown */}
-                              <div className="mb-4">
-                                    <label className="block py-2">Publication:</label>
-                                    <select
-                                          className="p-2 border rounded w-full"
-                                          value={publicationId}
-                                          onChange={(e) => setPublicationId(e.target.value)}
-                                          disabled={loading.publications}
-                                    >
-                                          <option value="">--Select Publication--</option>
-                                          {publications.map((pub) => (
-                                                <option key={pub.Publication_Id} value={pub.Publication_Id}>
-                                                      {pub.Publication_Name}
-                                                </option>
-                                          ))}
-                                    </select>
-                                    {loading.publications && <p className="text-sm text-gray-500 mt-1">Loading publications...</p>}
-                              </div>
-
-                              {/* Edition Dropdown */}
-                              <div className="mb-4">
-                                    <label className="block py-2">Edition:</label>
-                                    <select
-                                          className="p-2 border rounded w-full"
-                                          value={editionId}
-                                          onChange={(e) => setEditionId(e.target.value)}
-                                          disabled={!publicationId || loading.editions}
-                                    >
-                                          <option value="">--Select Edition--</option>
-                                          {editions.map((edition) => (
-                                                <option key={edition.Edition_Id} value={edition.Edition_Id}>
-                                                      {edition.Edition_Name}
-                                                </option>
-                                          ))}
-                                    </select>
-                                    {loading.editions && <p className="text-sm text-gray-500 mt-1">Loading editions...</p>}
-                              </div>
-
-                              {/* Publish Date */}
-                              <div className="mb-4">
-                                    <label className="block py-2">Publish Date:</label>
-                                    <input
-                                          type="date"
-                                          className="p-2 border rounded w-full"
-                                          value={publishDate}
-                                          onChange={(e) => setPublishDate(e.target.value)}
-                                    />
-                              </div>
-                        </div>
+                        <PublicationEditionForm
+                              publications={publications}
+                              publicationId={publicationId}
+                              setPublicationId={setPublicationId}
+                              loadingPublications={loading.publications}
+                              editions={editions}
+                              editionId={editionId}
+                              setEditionId={setEditionId}
+                              loadingEditions={loading.editions}
+                              publishDate={publishDate}
+                              setPublishDate={setPublishDate}
+                        />
 
                         {/* Page Input Table */}
                         <div className="w-full shadow-md mt-6 overflow-hidden">
@@ -273,9 +241,20 @@ const EMagazine = () => {
                         <div className="flex justify-center my-6">
                               <button
                                     onClick={handleSubmit}
-                                    className="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded-md shadow-md transition-colors"
+                                    className="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded-md shadow-md transition-colors flex items-center justify-center gap-2"
+                                    disabled={isSubmitting} // Disable button while submitting
                               >
-                                    Submit
+                                    {isSubmitting ? (
+                                          <>
+                                                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                                </svg>
+                                                Submitting...
+                                          </>
+                                    ) : (
+                                          "Submit"
+                                    )}
                               </button>
                         </div>
                   </div>

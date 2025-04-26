@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 const ImportEMagazine = () => {
-  // State management
   const [rows, setRows] = useState([{ id: 1, from: "", to: "", file: null }]);
   const [publications, setPublications] = useState([]);
   const [editions, setEditions] = useState([]);
