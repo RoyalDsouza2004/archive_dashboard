@@ -46,7 +46,6 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
 
             if (existing.count > 0) {
                   const skipMessage = `Skipping duplicate entry for Sub_Edition_Id: ${subEditionId}, Page_No: ${pageNoFrom}-${pageNoTo}`;
-                  console.log(skipMessage);
                   skippedEntries.push(skipMessage)
                   return;
             }

@@ -5,11 +5,9 @@ import { PermissionType, UserType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import jwt from "jsonwebtoken"
 
 
 export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next) => {
-
 
     const { email, userName, password, permissions } = req.body;
 

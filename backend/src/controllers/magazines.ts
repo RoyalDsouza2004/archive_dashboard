@@ -26,7 +26,6 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
       } else {
         parsedPages = pages;
       }
-      console.log(parsedPages)
     
       const [subEditionId] = await conn.query(
         `SELECT Sub_Edition_Id 

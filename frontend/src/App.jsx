@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import Loading from "./components/Loading";
 import Search from "./pages/Search";
-import ENewspaper from "./pages/Archive/ENewspaper";
-import EMagazine from "./pages/Archive/EMagazine";
+import ENewspaper from "./pages/archive/ENewspaper";
+import EMagazine from "./pages/archive/EMagazine";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import axios from "./api/axios";
@@ -31,20 +32,23 @@ const App = () => {
   if (loading) return <Loading />;
 
   return (
-    <Routes>
-      {isLoggedIn ? (
-        <Route path="/" element={<Layout />}>
-          <Route path="search" element={<Search />} />
-          <Route path="archive">
-            <Route path="e-newspaper" element={<ENewspaper />} />
-            <Route path="e-magazine" element={<EMagazine />} />
+    <>
+      <Toaster position="bottom-center" reverseOrder={false} /> 
+      <Routes>
+        {isLoggedIn ? (
+          <Route path="/" element={<Layout />}>
+            <Route path="search" element={<Search />} />
+            <Route path="archive">
+              <Route path="e-newspaper" element={<ENewspaper />} />
+              <Route path="e-magazine" element={<EMagazine />} />
+            </Route>
+            <Route path="profile" element={<Profile />} />
           </Route>
-          <Route path="profile" element={<Profile />} />
-        </Route>
-      ) : (
-        <Route path="*" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} />} />
-      )}
-    </Routes>
+        ) : (
+          <Route path="*" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} />} />
+        )}
+      </Routes>
+    </>
   );
 };
 

@@ -1,73 +1,14 @@
 import axios from "../../api/axios";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PublicationEditionForm from "../../components/SelectForm";
+import { toast } from "react-hot-toast"
 
 const EMagazine = () => {
       const [rows, setRows] = useState([{ id: 1, from: "", to: "", file: null }]);
-      const [publications, setPublications] = useState([]);
-      const [editions, setEditions] = useState([]);
       const [publicationId, setPublicationId] = useState("");
       const [editionId, setEditionId] = useState("");
       const [publishDate, setPublishDate] = useState("");
-      const [loading, setLoading] = useState({
-            publications: true,
-            editions: false
-      });
-      const [error, setError] = useState("");
       const [isSubmitting, setIsSubmitting] = useState(false);
-
-      useEffect(() => {
-            const fetchPublications = async () => {
-                  try {
-                        const response = await axios.get('/papers/get-publication');
-
-                        if (!response.data?.success) {
-                              throw new Error('Invalid response format');
-                        }
-
-                        setPublications(response.data.publications);
-                  } catch (err) {
-                        console.error("Fetch publications error:", {
-                              message: err.message,
-                              config: err.config,
-                              response: err.response?.data
-                        });
-                        setError(`Failed to load publications: ${err.message}`);
-                  } finally {
-                        setLoading(prev => ({ ...prev, publications: false }));
-                  }
-            };
-
-            fetchPublications();
-      }, []);
-
-      useEffect(() => {
-            const fetchEditions = async () => {
-                  if (!publicationId) return;
-
-                  setLoading(prev => ({ ...prev, editions: true }));
-                  setEditions([]);
-                  setEditionId("");
-
-                  try {
-                        const response = await axios.get(`/papers/get-edition?publicationId=${publicationId}`);
-
-                        if (!response.data?.success) {
-                              throw new Error('Invalid editions response format');
-                        }
-
-                        setEditions(response.data.editions || []);
-
-                  } catch (err) {
-                        console.error("Fetch editions error:", err);
-                        setError(`Failed to load editions: ${err.message}`);
-                  } finally {
-                        setLoading(prev => ({ ...prev, editions: false }));
-                  }
-            };
-
-            fetchEditions();
-      }, [publicationId]);
 
 
       const addRow = () => {
@@ -88,7 +29,6 @@ const EMagazine = () => {
 
       };
 
-      // Form submission
       const handleSubmit = async () => {
             setIsSubmitting(true)
 
@@ -133,10 +73,10 @@ const EMagazine = () => {
                         }
                   );
 
-                  alert(response.data.message);
+                  toast.success(response.data.message);
 
                   if (response.data.skippedEntries?.length) {
-                        alert(`Skipped entries: ${response.data.skippedEntries.join(", ")}`);
+                        toast.error(`Skipped entries: ${response.data.skippedEntries.join(", ")}`);
                   }
 
                   setPublicationId("");
@@ -146,7 +86,7 @@ const EMagazine = () => {
 
             } catch (error) {
                   console.error("Submission error:", error);
-                  alert(error.response?.data?.message || error.message || "Submission failed");
+                  toast.error(error.response?.data?.message || error.message || "Submission failed");
             } finally {
                   setIsSubmitting(false)
             }
@@ -158,17 +98,16 @@ const EMagazine = () => {
 
                   <div className="px-6 flex flex-col items-center">
                         <PublicationEditionForm
-                              publications={publications}
                               publicationId={publicationId}
-                              setPublicationId={setPublicationId}
-                              loadingPublications={loading.publications}
-                              editions={editions}
                               editionId={editionId}
-                              setEditionId={setEditionId}
-                              loadingEditions={loading.editions}
                               publishDate={publishDate}
-                              setPublishDate={setPublishDate}
+                              onChange={({ publicationId, editionId, publishDate }) => {
+                                    setPublicationId(publicationId);
+                                    setEditionId(editionId);
+                                    setPublishDate(publishDate);
+                              }}
                         />
+
 
                         {/* Page Input Table */}
                         <div className="w-full shadow-md mt-6 overflow-hidden">
@@ -231,8 +170,6 @@ const EMagazine = () => {
                               </button>
                         </div>
 
-                        {/* Status Messages */}
-                        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
                         <p className="text-red-500 text-sm text-center mt-4">
                               📌 Maximum file upload limit: <b>2GB</b>
                         </p>
