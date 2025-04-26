@@ -15,8 +15,6 @@ const App = () => {
     setIsLoggedIn(true);
   };
 
-  if (checking) return <div className="p-4">Checking session...</div>;
-
   return isLoggedIn ? <Home /> : <Login onLoginSuccess={handleLoginSuccess} />;
 };
 
