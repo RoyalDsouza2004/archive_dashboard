@@ -13,15 +13,17 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("All fields are required", 400));
     }
     const conn = await getConnection();
-    const parsedPages = pages.map(page => {
-        if (typeof page === "string") {
-            return JSON.parse(page.replace(/(\w+):/g, '"$1":'));
-        }
-        return pages;
-    });
+    let parsedPages;
+    if (typeof pages === "string") {
+        parsedPages = JSON.parse(pages);
+    }
+    else {
+        parsedPages = pages;
+    }
+    console.log(parsedPages);
     const [subEditionId] = await conn.query(`SELECT Sub_Edition_Id 
-            FROM sub_edition 
-            WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
+         FROM sub_edition 
+         WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
     if (!subEditionId) {
         fs.rmSync(folderPath, { recursive: true, force: true });
         return next(new ErrorHandler("SubEdition id is not found", 400));

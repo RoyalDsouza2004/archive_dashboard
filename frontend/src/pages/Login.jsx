@@ -13,7 +13,13 @@ const Login = ({ onLoginSuccess }) => {
     setError("");
 
     try {
-      const res = await axios.post("/user/login", { email, password });
+      const res = await axios.post("/user/login", { email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (res.data.sucess) {
         onLoginSuccess();
