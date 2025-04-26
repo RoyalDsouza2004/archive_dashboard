@@ -1,64 +1,70 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import axios from "../api/axios";
 
-const LoginSignup = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate();
+const Login = ({ onLoginSuccess }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const endpoint = isLogin ? '/api/login' : '/api/signup';
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await axios.post("/user/login", { email, password });
 
-    const result = await response.json();
-
-    if (response.ok) {
-      alert(isLogin ? 'Login Successful!' : 'Signup Successful!');
-      if (isLogin) {
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('username', username);
-        navigate('/');
+      if (res.data.sucess) {
+        onLoginSuccess();
       } else {
-        setIsLogin(true);
+        setError("Login failed");
       }
-    } else {
-      alert(result.message);
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-90">
-        <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? 'Login' : 'Signup'}</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-        <label className="block mb-4">Username:
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-2 border rounded mt-2" required />
-        </label>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        <label className="block mb-4">Password:
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded mt-2" required />
-        </label>
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 mb-4 border rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-          {isLogin ? 'Login' : 'Signup'}
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 mb-4 border rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
-
-        <p className="mt-4 text-center">
-          {isLogin ? 'Don\'t have an account?' : 'Already have an account?'}
-          <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-blue-500 ml-1 hover:underline">
-            {isLogin ? 'Signup' : 'Login'}
-          </button>
-        </p>
       </form>
     </div>
   );
 };
 
-export default LoginSignup;
+export default Login;
