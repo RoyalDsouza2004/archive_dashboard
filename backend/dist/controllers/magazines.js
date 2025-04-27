@@ -20,7 +20,6 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
     else {
         parsedPages = pages;
     }
-    console.log(parsedPages);
     const [subEditionId] = await conn.query(`SELECT Sub_Edition_Id 
          FROM sub_edition 
          WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
