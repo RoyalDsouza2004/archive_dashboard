@@ -41,6 +41,7 @@ export const searchPapers = TryCatch(async (req, res, next) => {
            JOIN sub_edition se ON l.Sub_Edition_Id = se.Sub_Edition_Id
            WHERE se.Publication_Id = ? AND se.Edition_Id = ? AND l.Date = ?`, [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]);
     }
+    conn.end();
     const formattedLogs = logs.reduce((acc, log) => {
         const pageRange = log.Page_No_From === log.Page_No_To ? log.Page_No_From : `${log.Page_No_From}-${log.Page_No_To}`;
         let fixedPath = log.path.replace(/\\/g, '/');

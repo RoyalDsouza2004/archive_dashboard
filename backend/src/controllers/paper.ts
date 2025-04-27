@@ -68,6 +68,7 @@ export const searchPapers = TryCatch(async (req, res: Response, next: NextFuncti
                   [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]
             );
       }
+      conn.end();
 
       const formattedLogs = logs.reduce((acc: Record<string, { Page: number | string; Path: string }[]>, log: {
             Page_No_From: number;
@@ -102,6 +103,7 @@ export const searchPapers = TryCatch(async (req, res: Response, next: NextFuncti
 
             return acc;
       }, {});
+     
 
       res.status(200).json({
             success: true,
