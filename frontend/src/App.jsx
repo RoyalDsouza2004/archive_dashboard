@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import Loading from "./components/Loading";
@@ -37,15 +37,20 @@ const App = () => {
       <Routes>
         {isLoggedIn ? (
           <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/search" />} />
             <Route path="search" element={<Search />} />
             <Route path="archive">
               <Route path="e-newspaper" element={<ENewspaper />} />
               <Route path="e-magazine" element={<EMagazine />} />
             </Route>
             <Route path="profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/search" />} />
           </Route>
         ) : (
-          <Route path="*" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} />} />
+          <>
+            <Route path="/login" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} isLoggedIn={isLoggedIn} />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
         )}
       </Routes>
     </>

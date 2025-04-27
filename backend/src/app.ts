@@ -61,7 +61,6 @@ app.get("/api/v1/auth/check", (req, res) => {
     });
     
 
-
 app.use("/storage" ,readRoute, express.static(process.env.FOLDER_PATH as string))
 
 

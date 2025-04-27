@@ -3,6 +3,7 @@ import { getConnection, sendCookie } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
+
 export const addUser = TryCatch(async (req, res, next) => {
     const { email, userName, password, permissions } = req.body;
     if (!email || !userName || !password) {
@@ -81,6 +82,7 @@ export const getUser = TryCatch(async (req, res, next) => {
         }
     });
 });
+
 export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     const { userId } = req.params;
     const { permissions } = req.body;

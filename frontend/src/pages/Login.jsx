@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { toast } from "react-hot-toast";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ onLoginSuccess, isLoggedIn }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/"); 
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,8 +29,9 @@ const Login = ({ onLoginSuccess }) => {
       );
 
       if (res.data.sucess) {
-        toast.success("Login Successfull")
+        toast.success("Login Successful");
         onLoginSuccess();
+        navigate("/"); 
       } else {
         toast.error("Login failed");
       }
