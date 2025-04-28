@@ -63,12 +63,13 @@ export const addNewNewsPapers = TryCatch(async (req, res, next) => {
         if (!subEditionId)
             return null;
         const filePath = path.join(folderPath, file);
+        const relativeFilePath = filePath.replace(process.env.FOLDER_PATH, '\\Storage').replace(/\\/g, "/");
         return insertLog({
             subEditionId,
             date,
             pageNoFrom: pageNo,
             pageNoTo: pageNo,
-            filePath
+            filePath: relativeFilePath
         }, skippedEntries);
     });
     await Promise.all(uploadPromises.filter(Boolean));

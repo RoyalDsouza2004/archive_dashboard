@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const PDFViewingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { pdfPath, pageNo, pdfName, subEditionName } = location.state || {};
+  const { pdfPath, pageNo, pdfName, subEditionName , publicationId , editionId } = location.state || {};
 
   if (!pdfPath) {
     return <div className="p-8">No PDF path provided.</div>;
@@ -26,7 +26,7 @@ const PDFViewingPage = () => {
           {subEditionName || "Edition"} - Page {pageNo}
         </h1>
         <a
-          href={pdfPath}
+          href={`${import.meta.env.VITE_BACKEND_URL}${pdfPath}?publicationId=${publicationId}&editionId=${editionId}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 font-bold mt-2 sm:mt-0 "
@@ -36,7 +36,7 @@ const PDFViewingPage = () => {
       </div>
 
       <iframe
-        src={pdfPath}
+        src={`${import.meta.env.VITE_BACKEND_URL}${pdfPath}?publicationId=${publicationId}&editionId=${editionId}`}
         title="PDF Viewer"
         className="w-full h-[80vh] rounded-lg border"
       />

@@ -44,20 +44,8 @@ export const searchPapers = TryCatch(async (req, res, next) => {
     conn.end();
     const formattedLogs = logs.reduce((acc, log) => {
         const pageRange = log.Page_No_From === log.Page_No_To ? log.Page_No_From : `${log.Page_No_From}-${log.Page_No_To}`;
-        let fixedPath = log.path.replace(/\\/g, '/');
-        const storageKeyword = '/storage/';
-        let finalPath = '';
-        const index = fixedPath.toLowerCase().indexOf(storageKeyword);
-        if (index !== -1) {
-            finalPath = fixedPath.substring(index);
-        }
-        else {
-            console.error("Storage path not found in:", fixedPath);
-            finalPath = fixedPath;
-        }
-        const fullPath = `${process.env.BACKEND_URL}${finalPath}?publicationId=${publicationId}&editionId=${editionId}`;
-        const pdfName = path.basename(finalPath);
-        const entry = { Page: pageRange, Path: fullPath, PDFName: pdfName };
+        const pdfName = path.basename(log.path);
+        const entry = { Page: pageRange, Path: log.path, PDFName: pdfName };
         if (!acc[log.Sub_Edition_Name]) {
             acc[log.Sub_Edition_Name] = [];
         }

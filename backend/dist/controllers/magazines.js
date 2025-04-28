@@ -21,8 +21,8 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
         parsedPages = pages;
     }
     const [subEditionId] = await conn.query(`SELECT Sub_Edition_Id 
-         FROM sub_edition 
-         WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
+     FROM sub_edition 
+     WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
     if (!subEditionId) {
         fs.rmSync(folderPath, { recursive: true, force: true });
         return next(new ErrorHandler("SubEdition id is not found", 400));
@@ -30,12 +30,14 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
     const skippedEntries = [];
     const insertPromises = files.map(async (file, index) => {
         const { pageNoFrom, pageNoTo } = parsedPages[index] || { pageNoFrom: 1, pageNoTo: 1 };
+        const fullFilePath = file.path;
+        const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH, '\\Storage');
         await insertLog({
             subEditionId: subEditionId.Sub_Edition_Id,
             date,
             pageNoFrom,
             pageNoTo,
-            filePath: file.path,
+            filePath: relativeFilePath,
         }, skippedEntries);
     });
     await Promise.all(insertPromises);

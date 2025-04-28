@@ -84,10 +84,12 @@ export default function Search() {
                   key={index}
                   to="/view-pdf"
                   state={{
-                    pdfPath: page.Path.replaceAll('\\', '/'),
+                    pdfPath: page.Path,
                     pageNo: page.Page,
                     pdfName: page.PDFName,
                     subEditionName: subEditionName,
+                    publicationId,
+                    editionId
                   }}
                   className="group bg-white p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200"
                 >

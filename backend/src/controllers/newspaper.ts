@@ -125,13 +125,15 @@ export const addNewNewsPapers = TryCatch(async (req: Request, res, next) => {
         if (!subEditionId) return null; 
     
         const filePath = path.join(folderPath, file);
+
+        const relativeFilePath = filePath.replace(process.env.FOLDER_PATH as string,'\\Storage').replace(/\\/g , "/");
     
         return insertLog({
           subEditionId,
           date,
           pageNoFrom: pageNo,
           pageNoTo: pageNo,
-          filePath
+          filePath:relativeFilePath
         }, skippedEntries);
       });
     
