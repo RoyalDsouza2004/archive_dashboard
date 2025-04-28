@@ -14,7 +14,7 @@ const Navbar = ({userName = "Admin"}) => {
   };
 
   return (
-    <header className="flex items-center justify-between px-8 py-4 shadow-md bg-white sticky top-0 z-50">
+    <header className="flex items-center justify-between px-8 py-4 shadow-md bg-white sticky top-0 z-50 gap-2.5">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2">
         <img src={logo} alt="PDF Library Logo" className="h-10 w-10 sm:h-14 sm:w-14" />
@@ -36,7 +36,7 @@ const Navbar = ({userName = "Admin"}) => {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-md z-10">
+            <div className="absolute -right-20 mt-4 w-40 bg-white rounded-md shadow-md z-10">
               <Link
                 to="/archive/e-newspaper"
                 onClick={() => setIsDropdownOpen(false)}
