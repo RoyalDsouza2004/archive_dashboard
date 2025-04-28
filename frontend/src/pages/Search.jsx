@@ -52,6 +52,8 @@ export default function Search() {
       toast.success("Successfully searched")
     } catch (error) {
       console.log(error)
+      localStorage.removeItem("searchResults")
+      localStorage.removeItem("searchInputs")
       toast.error(error.response?.data?.message || error.message || "Failed to fetch files" );
     } finally {
       setLoading(false);
