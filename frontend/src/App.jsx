@@ -14,11 +14,13 @@ import PDFViewingPage from "./pages/PDFViewingPage";
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("")
 
   const checkAuth = async () => {
     try {
       const res = await axios.get("/auth/check");
       setIsLoggedIn(res.data.authenticated);
+      setUserName(res.data.userName)
     } catch (err) {
       setIsLoggedIn(false);
     } finally {
@@ -37,7 +39,7 @@ const App = () => {
       <Toaster position="bottom-center" reverseOrder={false} /> 
       <Routes>
         {isLoggedIn ? (
-          <Route path="/" element={<Layout />}>
+          <Route path="/" element={<Layout userName={userName} />}>
             <Route index element={<Navigate to="/search" />} />
             <Route path="search" element={<Search />} />
             <Route path="view-pdf" element={<PDFViewingPage />} />

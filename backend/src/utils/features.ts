@@ -1,6 +1,6 @@
 import mariadb from 'mariadb';
 import dotenv from 'dotenv';
-import {  PermissionType, UploadFilesType, UserType } from '../types/types.js';
+import { PermissionType, UploadFilesType, UserType } from '../types/types.js';
 import jwt from "jsonwebtoken"
 import { Response } from 'express';
 
@@ -78,8 +78,8 @@ export const getPrefixSuffixPage = (filename: string) => {
 
 
 
-export const sendCookie = (user:UserType, res:Response, message:string, statusCode = 200 , permissions:PermissionType) => {
-      const token = jwt.sign({ id: user.User_Id }, process.env.JWT_SECRET as string);
+export const sendCookie = (user: { User_Id: string, User_Name: string }, res: Response, message: string, statusCode = 200, permissions: PermissionType) => {
+      const token = jwt.sign({ id: user.User_Id, userName: user.User_Name }, process.env.JWT_SECRET as string);
 
       return res.status(statusCode).cookie("token", token, {
             httpOnly: true,

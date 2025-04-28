@@ -58,7 +58,7 @@ export const getPrefixSuffixPage = (filename) => {
         : null;
 };
 export const sendCookie = (user, res, message, statusCode = 200, permissions) => {
-    const token = jwt.sign({ id: user.User_Id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user.User_Id, userName: user.User_Name }, process.env.JWT_SECRET);
     return res.status(statusCode).cookie("token", token, {
         httpOnly: true,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),

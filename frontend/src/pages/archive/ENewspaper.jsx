@@ -37,71 +37,73 @@ const ENewspaper = () => {
 
       const handleConfirm = async () => {
             if (!filesData.length) {
-              toast.error("No files to confirm");
-              return;
+                  toast.error("No files to confirm");
+                  return;
             }
-          
+
             try {
-              setConfirmLoading(true);
-              const res = await axios.post("/news-papers/add-files", {}, {
-                params: { publicationId, editionId, date: publishDate }
-              });
-          
-              const { message, totalFiles, skippedEntries } = res.data;
-          
-              toast.success(`${message} (${totalFiles} files uploaded)`);
-          
-              // If there are skipped entries show a toast too (optional)
-              if (skippedEntries && skippedEntries.length > 0) {
-                toast((t) => (
-                  <div>
-                    <p className="font-bold">Skipped {skippedEntries.length} duplicates</p>
-                    <button
-                      onClick={() => toast.dismiss(t.id)}
-                      className="mt-2 bg-gray-800 text-white px-3 py-1 rounded"
-                    >
-                      Close
-                    </button>
-                  </div>
-                ), { duration: 5000 });
-              }
-          
-              
-              setFilesData([]);
-              setFolderPath("");
-              setPublicationId("");
-              setEditionId("");
-              setPublishDate("");
-          
+                  setConfirmLoading(true);
+                  const res = await axios.post("/news-papers/add-files", {}, {
+                        params: { publicationId, editionId, date: publishDate }
+                  });
+
+                  const { message, totalFiles, skippedEntries } = res.data;
+
+                  toast.success(`${message} (${totalFiles} files uploaded)`);
+
+                  // If there are skipped entries show a toast too (optional)
+                  if (skippedEntries && skippedEntries.length > 0) {
+                        toast((t) => (
+                              <div>
+                                    <p className="font-bold">Skipped {skippedEntries.length} duplicates</p>
+                                    <button
+                                          onClick={() => toast.dismiss(t.id)}
+                                          className="mt-2 bg-gray-800 text-white px-3 py-1 rounded"
+                                    >
+                                          Close
+                                    </button>
+                              </div>
+                        ), { duration: 5000 });
+                  }
+
+
+                  setFilesData([]);
+                  setFolderPath("");
+                  setPublicationId("");
+                  setEditionId("");
+                  setPublishDate("");
+
             } catch (error) {
-              console.error(error);
-              toast.error(error.response?.data?.message || "Failed to confirm files");
+                  console.error(error);
+                  toast.error(error.response?.data?.message || "Failed to confirm files");
             } finally {
-              setConfirmLoading(false);
+                  setConfirmLoading(false);
             }
-          };
+      };
 
       return (
             <div className="p-6 space-y-6">
-                  <PublicationEditionForm
-                        publicationId={publicationId}
-                        editionId={editionId}
-                        publishDate={publishDate}
-                        onChange={({ publicationId, editionId, publishDate }) => {
-                              setPublicationId(publicationId);
-                              setEditionId(editionId);
-                              setPublishDate(publishDate);
-                        }}
-                  />
+                  <div className="px-6 flex flex-col items-center gap-4">
+                        <PublicationEditionForm
+                              publicationId={publicationId}
+                              editionId={editionId}
+                              publishDate={publishDate}
+                              onChange={({ publicationId, editionId, publishDate }) => {
+                                    setPublicationId(publicationId);
+                                    setEditionId(editionId);
+                                    setPublishDate(publishDate);
+                              }}
+                        />
+                        <button
+                              onClick={handleSearch}
+                              disabled={loading}
+                              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                        >
+                              {loading ? "Searching..." : "Search"}
+                        </button>
+                  </div>
 
-                  {/* ✅ Search Button */}
-                  <button
-                        onClick={handleSearch}
-                        disabled={loading}
-                        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                  >
-                        {loading ? "Searching..." : "Search"}
-                  </button>
+
 
                   {/* ✅ Display Retrieved Files */}
                   {filesData.length > 0 && (
@@ -125,7 +127,7 @@ const ENewspaper = () => {
                               >
                                     {confirmLoading ? "Confirming..." : "Confirm"}
                               </button>
-                             
+
 
                         </div>
 

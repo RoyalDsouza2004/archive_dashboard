@@ -29,7 +29,7 @@ const Login = ({ onLoginSuccess, isLoggedIn }) => {
       );
 
       if (res.data.sucess) {
-        toast.success("Login Successful");
+        toast.success(res.data.message);
         onLoginSuccess();
         navigate("/"); 
       } else {

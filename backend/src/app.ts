@@ -53,8 +53,8 @@ app.get("/api/v1/auth/check", (req, res) => {
       }
     
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id:string}
-        res.json({ authenticated: true, userId: decoded.id }) 
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id:string , userName:string}
+        res.json({ authenticated: true, userId: decoded.id , userName:decoded.userName }) 
       } catch (err) {
          res.json({ authenticated: false });
       }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import PublicationEditionForm from '../components/SelectForm';
 import { Link } from 'react-router-dom';
+import {toast} from 'react-hot-toast'
 
 export default function Search() {
   const [publicationId, setPublicationId] = useState('');
@@ -33,6 +34,8 @@ export default function Search() {
           date: publishDate,
         },
       });
+
+     
       const logs = data.logs || {};
       setSearchResults(logs);
 
@@ -40,9 +43,16 @@ export default function Search() {
         'searchInputs',
         JSON.stringify({ publicationId, editionId, publishDate })
       );
+
       localStorage.setItem('searchResults', JSON.stringify(logs));
+
+      if (!data.logs || Object.keys(data.logs).length === 0) {
+        throw new Error("Papers does not present");
+      }
+      toast.success("Successfully searched")
     } catch (error) {
-      console.error('Error fetching search results:', error);
+      console.log(error)
+      toast.error(error.response?.data?.message || error.message || "Failed to fetch files" );
     } finally {
       setLoading(false);
     }
@@ -50,7 +60,7 @@ export default function Search() {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
-      <div className="mb-6">
+      <div className="px-6 flex flex-col items-center gap-4 mb-6">
         <PublicationEditionForm
           publicationId={publicationId}
           editionId={editionId}
@@ -72,7 +82,7 @@ export default function Search() {
 
       <div>
         {Object.keys(searchResults).length === 0 && !loading && (
-          <p className="text-gray-500">No results found.</p>
+          <p className="text-gray-500 text-center">No results found.</p>
         )}
 
         {Object.entries(searchResults).map(([subEditionName, pages]) => (
@@ -93,9 +103,9 @@ export default function Search() {
                   }}
                   className="group bg-white p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200"
                 >
-                  <div className="flex flex-col items-center justify-center">
+                  <div className="flex flex-col items-center justify-center max-md:overflow-hidden flex-wrap gap-4">
                     <p className="font-semibold text-lg text-gray-800">Page {page.Page}</p>
-                    <p className="text-sm text-gray-500 ">{page.PDFName}</p>
+                    <p className="text-sm text-gray-500 max-sm:text-[12px]">{page.PDFName}</p>
                   </div>
                 </Link>
               ))}

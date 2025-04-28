@@ -40,8 +40,9 @@ export type Edition = {
 
  export interface UserType {
   email: string;
-  User_Id?:string,
   userName: string;
   password: string;
   permissions?: PermissionType[];
 }
+
+

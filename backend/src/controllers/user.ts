@@ -87,8 +87,6 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         permission: perm.permission,
     }));
 
-
-
     sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
 
 });
