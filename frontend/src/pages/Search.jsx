@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import PublicationEditionForm from '../components/SelectForm';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,19 @@ export default function Search() {
   const [searchResults, setSearchResults] = useState({});
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const savedInputs = JSON.parse(localStorage.getItem('searchInputs'));
+    const savedResults = JSON.parse(localStorage.getItem('searchResults'));
+    if (savedInputs) {
+      setPublicationId(savedInputs.publicationId || '');
+      setEditionId(savedInputs.editionId || '');
+      setPublishDate(savedInputs.publishDate || '');
+    }
+    if (savedResults) {
+      setSearchResults(savedResults);
+    }
+  }, []); 
+
   const handleSearch = async () => {
     try {
       setLoading(true);
@@ -20,7 +33,14 @@ export default function Search() {
           date: publishDate,
         },
       });
-      setSearchResults(data.logs || {});
+      const logs = data.logs || {};
+      setSearchResults(logs);
+
+      localStorage.setItem(
+        'searchInputs',
+        JSON.stringify({ publicationId, editionId, publishDate })
+      );
+      localStorage.setItem('searchResults', JSON.stringify(logs));
     } catch (error) {
       console.error('Error fetching search results:', error);
     } finally {
@@ -62,7 +82,13 @@ export default function Search() {
               {pages.map((page, index) => (
                 <Link
                   key={index}
-                  to={page.Path.replaceAll('\\', '/')}
+                  to="/view-pdf"
+                  state={{
+                    pdfPath: page.Path.replaceAll('\\', '/'),
+                    pageNo: page.Page,
+                    pdfName: page.PDFName,
+                    subEditionName: subEditionName,
+                  }}
                   className="group bg-white p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200"
                 >
                   <div className="flex flex-col items-center justify-center">

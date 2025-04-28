@@ -9,6 +9,7 @@ import EMagazine from "./pages/archive/EMagazine";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import axios from "./api/axios";
+import PDFViewingPage from "./pages/PDFViewingPage";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/search" />} />
             <Route path="search" element={<Search />} />
+            <Route path="view-pdf" element={<PDFViewingPage />} />
             <Route path="archive">
               <Route path="e-newspaper" element={<ENewspaper />} />
               <Route path="e-magazine" element={<EMagazine />} />
