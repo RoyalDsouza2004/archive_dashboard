@@ -52,7 +52,7 @@ const App = () => {
           </Route>
         ) : (
           <>
-            <Route path="/login" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} isLoggedIn={isLoggedIn} />} />
+            <Route path="/login" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} isLoggedIn={isLoggedIn} setUserName={setUserName} />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </>
         )}

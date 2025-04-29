@@ -86,6 +86,7 @@ export const sendCookie = (user: { User_Id: string, User_Name: string }, res: Re
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
       }).json({
             success: true,
+            userName:user.User_Name,
             message,
             permissions
       });
