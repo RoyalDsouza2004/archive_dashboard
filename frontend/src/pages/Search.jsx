@@ -89,7 +89,7 @@ export default function Search() {
 
         {Object.entries(searchResults).map(([subEditionName, pages]) => (
           <div key={subEditionName} className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">{subEditionName}</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4 ">{subEditionName}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
               {pages.map((page, index) => (
                 <Link

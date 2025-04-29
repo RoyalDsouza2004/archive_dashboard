@@ -28,7 +28,7 @@ const Login = ({ onLoginSuccess, isLoggedIn }) => {
         }
       );
 
-      if (res.data.sucess) {
+      if (res.data.success) {
         toast.success(res.data.message);
         onLoginSuccess();
         navigate("/"); 

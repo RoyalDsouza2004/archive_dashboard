@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.js";
 import { getConnection, sendCookie } from "../utils/features.js";
 import { PermissionType, UserType } from "../types/types.js";
@@ -219,3 +219,13 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
         users: formattedUsers,
     });
 })
+
+
+export const logout = (req: Request, res: Response, next: NextFunction) => {
+    res.status(200).cookie("token", "", {
+        expires: new Date(Date.now()),
+    }).json({
+        success: true,
+        message: "logout successfully"
+    })
+}

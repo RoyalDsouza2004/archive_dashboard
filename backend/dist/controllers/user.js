@@ -137,3 +137,11 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
         users: formattedUsers,
     });
 });
+export const logout = (req, res, next) => {
+    res.status(200).cookie("token", "", {
+        expires: new Date(Date.now()),
+    }).json({
+        success: true,
+        message: "logout successfully"
+    });
+};

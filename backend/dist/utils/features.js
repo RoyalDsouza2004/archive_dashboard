@@ -63,7 +63,7 @@ export const sendCookie = (user, res, message, statusCode = 200, permissions) =>
         httpOnly: true,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
     }).json({
-        sucess: true,
+        success: true,
         message,
         permissions
     });

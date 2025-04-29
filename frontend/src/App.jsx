@@ -39,7 +39,7 @@ const App = () => {
       <Toaster position="bottom-center" reverseOrder={false} /> 
       <Routes>
         {isLoggedIn ? (
-          <Route path="/" element={<Layout userName={userName} />}>
+        <Route path="/" element={<Layout userName={userName} setIsLoggedIn={setIsLoggedIn} />}>
             <Route index element={<Navigate to="/search" />} />
             <Route path="search" element={<Search />} />
             <Route path="view-pdf" element={<PDFViewingPage />} />
