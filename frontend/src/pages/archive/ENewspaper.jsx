@@ -82,7 +82,7 @@ const ENewspaper = () => {
       };
 
       return (
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 w-full bg-gray-50 rounded-xl p-2">
                    <h2 className="text-lg sm:text-xl md:text-2xl px-6 font-bold mt-4 mb-2">📖 Import E-Newspaper</h2>
                   <div className="px-6 flex flex-col items-center gap-4">
                         <PublicationEditionForm

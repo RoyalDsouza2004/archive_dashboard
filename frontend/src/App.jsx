@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
 import axios from "./api/axios";
+import React from "react";
 
 const Layout = React.lazy(() => import("./components/Layout"));
 const Search = React.lazy(() => import("./pages/Search"));

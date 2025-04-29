@@ -21,7 +21,7 @@ const PDFViewingPage = () => {
         </button>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap">
         <h1 className="text-4xl font-bold">
           {subEditionName || "Edition"} - Page {pageNo}
         </h1>

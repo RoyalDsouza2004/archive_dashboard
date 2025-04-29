@@ -84,7 +84,7 @@ const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
           Admin
         </NavItem>
       </nav>
-      <div className="flex flex-col items-end space-y-1">
+      <div className="flex flex-col items-start space-y-1">
         <div className="text-gray-800 font-medium">Welcome, {userName}</div>
         <button
           onClick={handleLogout}

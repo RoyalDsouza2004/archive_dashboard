@@ -89,8 +89,8 @@ export default function Search() {
 
         {Object.entries(searchResults).map(([subEditionName, pages]) => (
           <div key={subEditionName} className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4 ">{subEditionName}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <h2 className="text-2xl font-semibold text-white mb-4 bg-blue-600 p-2 rounded-2xl px-6">{subEditionName}</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 bg-blue-100 p-6 rounded-xl">
               {pages.map((page, index) => (
                 <Link
                   key={index}
@@ -105,9 +105,9 @@ export default function Search() {
                   }}
                   className="group bg-white p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200"
                 >
-                  <div className="flex flex-col items-center justify-center max-md:overflow-hidden flex-wrap gap-4">
-                    <p className="font-semibold text-lg text-gray-800">Page {page.Page}</p>
-                    <p className="text-sm text-gray-500 max-sm:text-[12px]">{page.PDFName}</p>
+                  <div className="flex flex-col items-center justify-center max-lg:overflow-hidden flex-wrap gap-4">
+                    <p className="font-semibold text-lg text-gray-800 text-center">Page {page.Page}</p>
+                    <p className="text-sm text-gray-500 max-sm:text-[12px] text-center">{page.PDFName}</p>
                   </div>
                 </Link>
               ))}
