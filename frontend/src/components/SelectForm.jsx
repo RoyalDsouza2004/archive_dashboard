@@ -2,29 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { toast } from "react-hot-toast";
 
-const PublicationEditionForm = ({ publicationId, editionId, publishDate, onChange }) => {
-  const [publications, setPublications] = useState([]);
+const PublicationEditionForm = ({publications, publicationId, editionId, publishDate, onChange }) => {
   const [editions, setEditions] = useState([]);
-  const [loading, setLoading] = useState({ publications: false, editions: false });
+  const [loading, setLoading] = useState({editions: false });
 
-  useEffect(() => {
-    const fetchPublications = async () => {
-      setLoading(prev => ({ ...prev, publications: true }));
-      try {
-        const response = await axios.get('/papers/get-publication');
-        if (!response.data?.success) {
-          throw new Error('Invalid response format');
-        }
-        setPublications(response.data.publications);
-      } catch (err) {
-        console.error(err);
-        toast.error(`Failed to load publications`);
-      } finally {
-        setLoading(prev => ({ ...prev, publications: false }));
-      }
-    };
-    fetchPublications();
-  }, []);
 
   useEffect(() => {
     const fetchEditions = async () => {

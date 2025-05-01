@@ -4,7 +4,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 export const addUser = TryCatch(async (req, res, next) => {
-    const { email, userName, password, permissions } = req.body;
+    const { email, userName, password, isAdmin, permissions } = req.body;
     if (!email || !userName || !password) {
         return next(new ErrorHandler("Please Provide all fields", 400));
     }
@@ -15,11 +15,12 @@ export const addUser = TryCatch(async (req, res, next) => {
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuid();
-    await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password) VALUES (?, ?, ? ,?)", [
+    await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
         userName,
         hashedPassword,
+        isAdmin
     ]);
     if (permissions && permissions.length > 0) {
         const permissionQueries = permissions.map(({ publicationId, editionId, permission }) => {

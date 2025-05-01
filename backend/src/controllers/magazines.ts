@@ -1,11 +1,20 @@
 import { TryCatch } from "../middlewares/error.js";
-import { UploadRequestBody } from "../types/types.js";
+import { Publication, UploadRequestBody } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, insertLog } from "../utils/features.js";
 import { Request } from "express";
 import fs from "fs";
+import jwt from "jsonwebtoken"
 
 export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadRequestBody>, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return next(new ErrorHandler("Login First" , 403))
+  }
+
+  const { id } = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string }
+
   const { publicationId, editionId } = req.query;
   const { date, pages } = req.body;
   const files = req.files as Express.Multer.File[];
@@ -30,7 +39,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
   const [subEditionId] = await conn.query(
     `SELECT Sub_Edition_Id 
      FROM sub_edition 
-     WHERE Publication_Id = ? AND Edition_Id = ?;`, 
+     WHERE Publication_Id = ? AND Edition_Id = ?;`,
     [publicationId, editionId]
   );
 
@@ -39,6 +48,8 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
     return next(new ErrorHandler("SubEdition id is not found", 400));
   }
 
+  
+
   const skippedEntries: string[] = [];
 
   const insertPromises = files.map(async (file, index) => {
@@ -46,14 +57,15 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
 
     const fullFilePath = file.path;
 
-    const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH as string,'\\Storage');
+    const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH as string, '\\Storage');
 
     await insertLog({
       subEditionId: subEditionId.Sub_Edition_Id,
       date,
       pageNoFrom,
       pageNoTo,
-      filePath: relativeFilePath,  
+      filePath: relativeFilePath,
+      id
     }, skippedEntries);
   });
 
@@ -69,3 +81,18 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
     skippedEntries
   });
 });
+
+
+export const getPublication = TryCatch(async (req, res, next) => {
+
+  const conn = await getConnection()
+
+  const publications: Publication[] = await conn.query("select Publication_Id ,Publication_Name from publication where isNewsPaper = false")
+  conn.end()
+
+  res.status(200).json({
+    success: true,
+    publications
+  });
+
+})

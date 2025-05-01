@@ -18,7 +18,8 @@ export type UploadFilesType = {
   date: Date,
   pageNoFrom: number,
   pageNoTo: number,
-  filePath: string
+  filePath: string, 
+  id:string
 }
 
 export type Publication = {
@@ -42,6 +43,7 @@ export type Edition = {
   email: string;
   userName: string;
   password: string;
+  isAdmin?:boolean;
   permissions?: PermissionType[];
 }
 

@@ -2,7 +2,13 @@ import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { getConnection, insertLog } from "../utils/features.js";
 import fs from "fs";
+import jwt from "jsonwebtoken";
 export const addNewMagazines = TryCatch(async (req, res, next) => {
+    const token = req.cookies.token;
+    if (!token) {
+        return next(new ErrorHandler("Login First", 403));
+    }
+    const { id } = jwt.verify(token, process.env.JWT_SECRET);
     const { publicationId, editionId } = req.query;
     const { date, pages } = req.body;
     const files = req.files;
@@ -38,6 +44,7 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
             pageNoFrom,
             pageNoTo,
             filePath: relativeFilePath,
+            id
         }, skippedEntries);
     });
     await Promise.all(insertPromises);
@@ -48,5 +55,14 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
         message: totalFiles ? "Files uploaded successfully" : "Skipped Uploading Duplicate files",
         totalFiles,
         skippedEntries
+    });
+});
+export const getPublication = TryCatch(async (req, res, next) => {
+    const conn = await getConnection();
+    const publications = await conn.query("select Publication_Id ,Publication_Name from publication where isNewsPaper = false");
+    conn.end();
+    res.status(200).json({
+        success: true,
+        publications
     });
 });

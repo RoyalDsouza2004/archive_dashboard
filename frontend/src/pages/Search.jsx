@@ -6,10 +6,33 @@ import { toast } from 'react-hot-toast'
 
 export default function Search() {
   const [publicationId, setPublicationId] = useState('');
+  const [publications, setPublications] = useState([]);
   const [editionId, setEditionId] = useState('');
   const [publishDate, setPublishDate] = useState('');
   const [searchResults, setSearchResults] = useState({});
+  const [loadingPublications, setLoadingPublications] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchPublications = async () => {
+      setLoadingPublications(true);
+      try {
+        const response = await axios.get('/papers/get-publication');
+        if (!response.data?.success) {
+          throw new Error('Invalid response format');
+        }
+        setPublications(response.data.publications);
+      } catch (err) {
+        console.error(err);
+        toast.error(`Failed to load publications`);
+      } finally {
+        setLoadingPublications(false);
+      }
+    };
+    fetchPublications();
+  }, []);
+
+
 
   useEffect(() => {
     const savedInputs = JSON.parse(localStorage.getItem('searchInputs'));
@@ -62,16 +85,22 @@ export default function Search() {
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       <div className="px-6 flex flex-col items-center gap-4 mb-6">
-        <PublicationEditionForm
-          publicationId={publicationId}
-          editionId={editionId}
-          publishDate={publishDate}
-          onChange={({ publicationId, editionId, publishDate }) => {
-            setPublicationId(publicationId);
-            setEditionId(editionId);
-            setPublishDate(publishDate);
-          }}
-        />
+        {loadingPublications ? (
+          <p className="text-center text-gray-500">Loading publications...</p>
+        ) : (
+          <PublicationEditionForm
+            publications={publications}
+            publicationId={publicationId}
+            editionId={editionId}
+            publishDate={publishDate}
+            onChange={({ publicationId, editionId, publishDate }) => {
+              setPublicationId(publicationId);
+              setEditionId(editionId);
+              setPublishDate(publishDate);
+            }}
+          />
+        )}
+
         <button
           onClick={handleSearch}
           className="bg-blue-600 text-white px-6 py-3 rounded-md mt-4 hover:bg-blue-700 focus:outline-none"

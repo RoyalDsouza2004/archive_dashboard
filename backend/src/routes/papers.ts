@@ -13,4 +13,4 @@ router.get("/get-edition" ,getEdition )
 //api/v1/papers/search?
 router.get("/search" ,readRoute, searchPapers)
 
-export default router
+export default router;

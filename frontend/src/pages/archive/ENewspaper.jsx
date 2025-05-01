@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "../../api/axios";
 import PublicationEditionForm from "../../components/SelectForm";
 import { toast } from "react-hot-toast";
 
 const ENewspaper = () => {
       const [publicationId, setPublicationId] = useState("");
+      const [publications, setPublications] = useState([]);
       const [editionId, setEditionId] = useState("");
       const [publishDate, setPublishDate] = useState("");
       const [filesData, setFilesData] = useState([]);
       const [folderPath, setFolderPath] = useState("");
       const [loading, setLoading] = useState(false);
       const [confirmLoading, setConfirmLoading] = useState(false);
+      const [loadingPublications, setLoadingPublications] = useState(false);
+
+      useEffect(() => {
+            const fetchPublications = async () => {
+                  setLoadingPublications(true);
+                  try {
+                        const response = await axios.get('/news-papers/get-publication');
+                        if (!response.data?.success) {
+                              throw new Error('Invalid response format');
+                        }
+                        setPublications(response.data.publications);
+                  } catch (err) {
+                        console.error(err);
+                        toast.error(`Failed to load publications`);
+                  } finally {
+                        setLoadingPublications(false);
+                  }
+            };
+            fetchPublications();
+      }, []);
+
+
 
       const handleSearch = async () => {
             if (!publicationId || !editionId || !publishDate) {
@@ -24,14 +47,27 @@ const ENewspaper = () => {
                         params: { publicationId, editionId, date: publishDate },
                   });
 
-                  setFolderPath(res.data.folderPath);
-                  setFilesData(res.data.files);
-                  toast.success("Files retrieved successfully!");
+                  if (res.data?.success) {
+                        setFolderPath(res.data.folderPath);
+                        const updatedFiles = res.data.files.map((file) => ({
+                              file: file.file,
+                              isInDb: file.isInDb,
+                        }));
+
+                        setFilesData(updatedFiles);
+                        toast.success("Files retrieved successfully!");
+
+                        if (updatedFiles.length === 0) {
+                              throw new Error("No files found");
+                        }
+                  } else {
+                        throw new Error("Failed to fetch files");
+                  }
             } catch (error) {
                   console.error(error);
                   setFilesData([]);
                   setFolderPath("");
-                  toast.error(error.response?.data?.message || "Failed to fetch files");
+                  toast.error(error.response?.data?.message || error.message || "Failed to fetch files");
             } finally {
                   setLoading(false);
             }
@@ -49,15 +85,33 @@ const ENewspaper = () => {
                         params: { publicationId, editionId, date: publishDate }
                   });
 
-                  const { message, totalFiles, skippedEntries } = res.data;
+                  const { message, totalFiles, skippedEntries, invalidFormatFiles } = res.data;
 
                   toast.success(`${message} (${totalFiles} files uploaded)`);
 
-                  // If there are skipped entries show a toast too (optional)
                   if (skippedEntries && skippedEntries.length > 0) {
                         toast((t) => (
                               <div>
                                     <p className="font-bold">Skipped {skippedEntries.length} duplicates</p>
+                                    <button
+                                          onClick={() => toast.dismiss(t.id)}
+                                          className="mt-2 bg-gray-800 text-white px-3 py-1 rounded"
+                                    >
+                                          Close
+                                    </button>
+                              </div>
+                        ), { duration: 5000 });
+                  }
+
+                  if (invalidFormatFiles && invalidFormatFiles.length > 0) {
+                        toast((t) => (
+                              <div>
+                                    <p className="font-bold">Found {invalidFormatFiles.length} files with invalid format:</p>
+                                    <ul className="mt-2">
+                                          {invalidFormatFiles.map((file, index) => (
+                                                <li key={index} className="text-sm text-red-500">{file}</li>
+                                          ))}
+                                    </ul>
                                     <button
                                           onClick={() => toast.dismiss(t.id)}
                                           className="mt-2 bg-gray-800 text-white px-3 py-1 rounded"
@@ -81,20 +135,27 @@ const ENewspaper = () => {
             }
       };
 
+
       return (
             <div className="p-6 space-y-6 w-full bg-gray-50 rounded-xl">
-                   <h2 className="text-lg sm:text-xl md:text-2xl px-6 font-bold mt-4 mb-2">📖 Import E-Newspaper</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl px-6 font-bold mt-4 mb-2">📖 Import E-Newspaper</h2>
                   <div className="px-6 flex flex-col items-center gap-4">
-                        <PublicationEditionForm
-                              publicationId={publicationId}
-                              editionId={editionId}
-                              publishDate={publishDate}
-                              onChange={({ publicationId, editionId, publishDate }) => {
-                                    setPublicationId(publicationId);
-                                    setEditionId(editionId);
-                                    setPublishDate(publishDate);
-                              }}
-                        />
+                        {loadingPublications ? (
+                              <p className="text-gray-500">Loading publications...</p>
+                        ) : (
+                              <PublicationEditionForm
+                                    publications={publications}
+                                    publicationId={publicationId}
+                                    editionId={editionId}
+                                    publishDate={publishDate}
+                                    onChange={({ publicationId, editionId, publishDate }) => {
+                                          setPublicationId(publicationId);
+                                          setEditionId(editionId);
+                                          setPublishDate(publishDate);
+                                    }}
+                              />
+                        )}
+
                         <button
                               onClick={handleSearch}
                               disabled={loading}
@@ -114,11 +175,15 @@ const ENewspaper = () => {
 
                               <ul className="border rounded p-4 max-h-80 overflow-y-auto space-y-2">
                                     {filesData.map((file, idx) => (
-                                          <li key={idx} className="bg-gray-100 p-2 rounded flex justify-between items-center">
-                                                <span className="font-medium">{file}</span>
+                                          <li
+                                                key={idx}
+                                                className={`p-2 rounded flex justify-between items-center ${file.isInDb ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}
+                                          >
+                                                <span className="font-medium">{file.file}</span><span className="font-bold">{ file.isInDb ? "File is already present in database":"New file"}</span>
                                           </li>
                                     ))}
                               </ul>
+
 
                               {/* ✅ Confirm Button */}
                               <button

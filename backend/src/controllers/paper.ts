@@ -9,7 +9,7 @@ export const getPublication = TryCatch(async (req, res, next) => {
 
       const conn = await getConnection()
 
-      const publications: Publication[] = await conn.query("select * from publication")
+      const publications: Publication[] = await conn.query("select Publication_Id ,Publication_Name from publication")
       conn.end()
 
       res.status(200).json({

@@ -4,7 +4,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import path from "path";
 export const getPublication = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
-    const publications = await conn.query("select * from publication");
+    const publications = await conn.query("select Publication_Id ,Publication_Name from publication");
     conn.end();
     res.status(200).json({
         success: true,

@@ -32,7 +32,7 @@ export const getConnection = async () => {
 };
 
 
-export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath }: UploadFilesType, skippedEntries: string[]) => {
+export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath , id }: UploadFilesType, skippedEntries: string[]) => {
       let conn;
       try {
             conn = await getConnection();
@@ -51,10 +51,10 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
             }
 
             const query = `
-          INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path)
-          VALUES (?, ?, ?, ?, ?);`;
+          INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path , User_Id)
+          VALUES (?, ?, ?, ?, ? , ?);`;
 
-            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath]);
+            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath , id]);
 
       } catch (err) {
             console.error(`Error inserting ${filePath}:`, err);
