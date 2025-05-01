@@ -4,7 +4,7 @@ import { isAdmin } from "../middlewares/auth.js";
 
 const router = Router()
 
-router.post('/new', isAdmin, addUser);
+router.post('/new', addUser);
 router.post('/login', loginUser);
 router.post('/logout', logout);
 router.get('/all', isAdmin, getAllUsers);
