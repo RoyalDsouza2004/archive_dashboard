@@ -29,6 +29,8 @@ const ENewspaper = () => {
                   toast.success("Files retrieved successfully!");
             } catch (error) {
                   console.error(error);
+                  setFilesData([]);
+                  setFolderPath("");
                   toast.error(error.response?.data?.message || "Failed to fetch files");
             } finally {
                   setLoading(false);
@@ -66,23 +68,21 @@ const ENewspaper = () => {
                         ), { duration: 5000 });
                   }
 
-
-                  setFilesData([]);
-                  setFolderPath("");
-                  setPublicationId("");
-                  setEditionId("");
-                  setPublishDate("");
-
             } catch (error) {
                   console.error(error);
                   toast.error(error.response?.data?.message || "Failed to confirm files");
             } finally {
                   setConfirmLoading(false);
+                  setFilesData([]);
+                  setFolderPath("");
+                  setPublicationId("");
+                  setEditionId("");
+                  setPublishDate("");
             }
       };
 
       return (
-            <div className="p-6 space-y-6 w-full bg-gray-50 rounded-xl p-2">
+            <div className="p-6 space-y-6 w-full bg-gray-50 rounded-xl">
                    <h2 className="text-lg sm:text-xl md:text-2xl px-6 font-bold mt-4 mb-2">📖 Import E-Newspaper</h2>
                   <div className="px-6 flex flex-col items-center gap-4">
                         <PublicationEditionForm

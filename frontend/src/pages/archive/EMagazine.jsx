@@ -79,16 +79,15 @@ const EMagazine = () => {
                         toast.error(`Skipped entries: ${response.data.skippedEntries.join(", ")}`);
                   }
 
-                  setPublicationId("");
-                  setEditionId("");
-                  setPublishDate("");
-                  setRows([{ id: 1, from: "", to: "", file: null }]);
-
             } catch (error) {
                   console.error("Submission error:", error);
                   toast.error(error.response?.data?.message || error.message || "Submission failed");
             } finally {
                   setIsSubmitting(false)
+                  setPublicationId("");
+                  setEditionId("");
+                  setPublishDate("");
+                  setRows([{ id: 1, from: "", to: "", file: null }]);
             }
       };
 

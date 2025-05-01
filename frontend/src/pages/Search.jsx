@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import PublicationEditionForm from '../components/SelectForm';
 import { Link } from 'react-router-dom';
-import {toast} from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 export default function Search() {
   const [publicationId, setPublicationId] = useState('');
@@ -22,7 +22,7 @@ export default function Search() {
     if (savedResults) {
       setSearchResults(savedResults);
     }
-  }, []); 
+  }, []);
 
   const handleSearch = async () => {
     try {
@@ -35,7 +35,7 @@ export default function Search() {
         },
       });
 
-     
+
       const logs = data.logs || {};
       setSearchResults(logs);
 
@@ -51,10 +51,9 @@ export default function Search() {
       }
       toast.success("Successfully searched")
     } catch (error) {
-      console.log(error)
       localStorage.removeItem("searchResults")
       localStorage.removeItem("searchInputs")
-      toast.error(error.response?.data?.message || error.message || "Failed to fetch files" );
+      toast.error(error.response?.data?.message || error.message || "Failed to fetch files");
     } finally {
       setLoading(false);
     }

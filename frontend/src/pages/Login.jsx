@@ -34,7 +34,7 @@ const Login = ({ onLoginSuccess, isLoggedIn , setUserName }) => {
         setUserName(res.data.userName)
         navigate("/"); 
       } else {
-        toast.error("Login failed");
+        throw new error("Login failed");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
