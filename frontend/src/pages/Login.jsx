@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { toast } from "react-hot-toast";
 
-const Login = ({ onLoginSuccess, isLoggedIn , setUserName }) => {
+const Login = ({ onLoginSuccess, isLoggedIn , setUserName , setIsAdmin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,6 +32,7 @@ const Login = ({ onLoginSuccess, isLoggedIn , setUserName }) => {
         toast.success(res.data.message);
         onLoginSuccess();
         setUserName(res.data.userName)
+        setIsAdmin(res.data.isAdmin)
         navigate("/"); 
       } else {
         throw new error("Login failed");

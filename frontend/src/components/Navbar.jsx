@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from "../assets/logo.png";
 import axios from '../api/axios';
-import {toast} from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
+const Navbar = ({ userName = "Admin", setIsLoggedIn, isAdmin }) => {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -12,6 +12,9 @@ const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
   const isActive = (path) => {
     if (path === '/archive') {
       return location.pathname.startsWith('/archive');
+    }
+    if(path === "/profile"){
+      return location.pathname.startsWith('/profile');
     }
     return location.pathname === path;
   };
@@ -24,10 +27,10 @@ const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
         },
         withCredentials: true,
       });
-  
+
       if (res.data?.success) {
         toast.success(res.data.message);
-        setIsLoggedIn(false); 
+        setIsLoggedIn(false);
         navigate("/login");
       } else {
         toast.error("Logout failed");
@@ -36,7 +39,7 @@ const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
       toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
-  
+
 
   return (
     <header className="flex items-center justify-between px-8 py-4 shadow-md bg-white sticky top-0 z-50 gap-2.5">
@@ -80,9 +83,11 @@ const Navbar = ({ userName = "Admin" ,setIsLoggedIn  }) => {
           )}
         </div>
 
-        <NavItem to="/profile" isActive={isActive('/profile')}>
-          Admin
-        </NavItem>
+        {
+          isAdmin && <NavItem to="/profile" isActive={isActive('/profile')}>
+            Admin
+          </NavItem>
+        }
       </nav>
       <div className="flex flex-col items-start space-y-1">
         <div className="text-gray-800 font-medium">Welcome, {userName}</div>

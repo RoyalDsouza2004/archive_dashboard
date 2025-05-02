@@ -34,9 +34,11 @@ export type Edition = {
 
  
  export interface PermissionType {
-  publicationId: string;
-  editionId: string;
-  permission: "r" | "w" | "rw";
+  publicationId?: string;
+  publicationName:string;
+  editionId?: string;
+  editionName:string;
+  permission: "r" | "w" | "rw" | "";
 }
 
  export interface UserType {
@@ -47,4 +49,9 @@ export type Edition = {
   permissions?: PermissionType[];
 }
 
+export type TokenUser = {
+  User_Id: string,
+  User_Name: string, 
+  isAdmin: boolean
+}
 

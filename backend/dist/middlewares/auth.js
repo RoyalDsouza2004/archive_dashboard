@@ -64,7 +64,8 @@ export const authenticatedUser = async (req, res) => {
             (res.status(401).cookie("token", "", {
                 expires: new Date(Date.now()),
             }).json({ authenticated: false }));
-        res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName });
+        conn.end();
+        res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName, isAdmin: decoded.isAdmin });
     }
     catch (err) {
         res.status(401).cookie("token", "", {

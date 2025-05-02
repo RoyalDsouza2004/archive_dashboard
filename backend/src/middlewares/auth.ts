@@ -94,7 +94,7 @@ export const authenticatedUser = async (req: Request, res: Response) => {
 
       try {
             const conn = await getConnection()
-            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string }
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string , isAdmin:boolean}
 
             const [{ isActive }] = await conn.query(
                   "SELECT isActive FROM user WHERE User_Id = ?",
@@ -106,8 +106,11 @@ export const authenticatedUser = async (req: Request, res: Response) => {
                         expires: new Date(Date.now()),
                   }).json({ authenticated: false })
             )
+            conn.end()
 
-            res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName })
+
+            res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName , isAdmin:decoded.isAdmin })
+
       } catch (err) {
             res.status(401).cookie("token", "", {
                   expires: new Date(Date.now()),

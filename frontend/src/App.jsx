@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
 import axios from "./api/axios";
 import React from "react";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const Layout = React.lazy(() => import("./components/Layout"));
 const Search = React.lazy(() => import("./pages/Search"));
@@ -12,17 +13,21 @@ const EMagazine = React.lazy(() => import("./pages/archive/EMagazine"));
 const Profile = React.lazy(() => import("./pages/Profile"));
 const Login = React.lazy(() => import("./pages/Login"));
 const PDFViewingPage = React.lazy(() => import("./pages/PDFViewingPage"));
+const AddUserPage = React.lazy(() => import("./pages/AddUser"));
+const UpdateUserPage = React.lazy(() => import("./pages/UpdateUser"));
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAuth = async () => {
     try {
       const res = await axios.get("/auth/check");
       setIsLoggedIn(res.data.authenticated);
       setUserName(res.data.userName);
+      setIsAdmin(res.data.isAdmin);
     } catch (err) {
       setIsLoggedIn(false);
     } finally {
@@ -38,17 +43,29 @@ const App = () => {
 
   return (
     <>
-      <Toaster position="bottom-center" reverseOrder={false}
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
         toastOptions={{
           style: {
-            maxWidth: '500px',
-            wordBreak: 'break-word',
+            maxWidth: "500px",
+            wordBreak: "break-word",
           },
-        }} />
+        }}
+      />
       <Suspense fallback={<Loading />}>
         <Routes>
           {isLoggedIn ? (
-            <Route path="/" element={<Layout userName={userName} setIsLoggedIn={setIsLoggedIn} />}>
+            <Route
+              path="/"
+              element={
+                <Layout
+                  userName={userName}
+                  setIsLoggedIn={setIsLoggedIn}
+                  isAdmin={isAdmin}
+                />
+              }
+            >
               <Route index element={<Navigate to="/search" />} />
               <Route path="search" element={<Search />} />
               <Route path="view-pdf" element={<PDFViewingPage />} />
@@ -56,12 +73,45 @@ const App = () => {
                 <Route path="e-newspaper" element={<ENewspaper />} />
                 <Route path="e-magazine" element={<EMagazine />} />
               </Route>
-              <Route path="profile" element={<Profile />} />
+              <Route
+                path="profile"
+                element={
+                  <ProtectedRoute isAllowed={isAdmin}>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="profile/add"
+                element={
+                  <ProtectedRoute isAllowed={isAdmin}>
+                    <AddUserPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="profile/update/:userId"
+                element={
+                  <ProtectedRoute isAllowed={isAdmin}>
+                    <UpdateUserPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<Navigate to="/search" />} />
             </Route>
           ) : (
             <>
-              <Route path="/login" element={<Login onLoginSuccess={() => setIsLoggedIn(true)} isLoggedIn={isLoggedIn} setUserName={setUserName} />} />
+              <Route
+                path="/login"
+                element={
+                  <Login
+                    onLoginSuccess={() => setIsLoggedIn(true)}
+                    isLoggedIn={isLoggedIn}
+                    setUserName={setUserName}
+                    setIsAdmin={setIsAdmin}
+                  />
+                }
+              />
               <Route path="*" element={<Navigate to="/login" />} />
             </>
           )}

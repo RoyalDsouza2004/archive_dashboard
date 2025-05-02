@@ -1,8 +1,9 @@
 import mariadb from 'mariadb';
 import dotenv from 'dotenv';
-import { PermissionType, UploadFilesType, UserType } from '../types/types.js';
+import { PermissionType, TokenUser, UploadFilesType, UserType } from '../types/types.js';
 import jwt from "jsonwebtoken"
 import { Response } from 'express';
+import { isAdmin } from '../middlewares/auth.js';
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ export const getConnection = async () => {
 };
 
 
-export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath , id }: UploadFilesType, skippedEntries: string[]) => {
+export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, filePath, id }: UploadFilesType, skippedEntries: string[]) => {
       let conn;
       try {
             conn = await getConnection();
@@ -54,7 +55,7 @@ export const insertLog = async ({ subEditionId, date, pageNoFrom, pageNoTo, file
           INSERT INTO log (Sub_Edition_Id, Date, Page_No_From, Page_No_To, path , User_Id)
           VALUES (?, ?, ?, ?, ? , ?);`;
 
-            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath , id]);
+            await conn.query(query, [subEditionId, date, pageNoFrom, pageNoTo, filePath, id]);
 
       } catch (err) {
             console.error(`Error inserting ${filePath}:`, err);
@@ -78,15 +79,16 @@ export const getPrefixSuffixPage = (filename: string) => {
 
 
 
-export const sendCookie = (user: { User_Id: string, User_Name: string }, res: Response, message: string, statusCode = 200, permissions: PermissionType) => {
-      const token = jwt.sign({ id: user.User_Id, userName: user.User_Name }, process.env.JWT_SECRET as string);
+export const sendCookie = (user: TokenUser, res: Response, message: string, statusCode = 200, permissions: PermissionType) => {
+      const token = jwt.sign({ id: user.User_Id, userName: user.User_Name, isAdmin: user.isAdmin }, process.env.JWT_SECRET as string);
 
       return res.status(statusCode).cookie("token", token, {
             httpOnly: true,
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
       }).json({
             success: true,
-            userName:user.User_Name,
+            userName: user.User_Name,
+            isAdmin:user.isAdmin,
             message,
             permissions
       });
