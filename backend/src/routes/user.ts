@@ -11,4 +11,5 @@ router.get('/all', isAdmin, getAllUsers);
 router.route('/:userId').get(isAdmin, getUser).put(isAdmin, addOrUpdateUserPermission)
 
 
+
 export default router;

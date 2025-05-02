@@ -38,7 +38,13 @@ const App = () => {
 
   return (
     <>
-      <Toaster position="bottom-center" reverseOrder={false} />
+      <Toaster position="bottom-center" reverseOrder={false}
+        toastOptions={{
+          style: {
+            maxWidth: '500px',
+            wordBreak: 'break-word',
+          },
+        }} />
       <Suspense fallback={<Loading />}>
         <Routes>
           {isLoggedIn ? (

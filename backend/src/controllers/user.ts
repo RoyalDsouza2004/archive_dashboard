@@ -110,6 +110,10 @@ export const getUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("User not found", 404))
     }
 
+    if(!user.isActive){
+        return next(new ErrorHandler("Please ask Admin to Access again", 404))
+    }
+
     const permissionsResults = await conn.query(
         "SELECT Publication_Id, Edition_Id, permission FROM user_permission WHERE User_Id = ?",
         [userId]
