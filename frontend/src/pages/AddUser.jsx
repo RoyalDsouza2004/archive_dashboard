@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -13,8 +13,25 @@ const AddUserForm = () => {
             password: "",
             isAdmin: false,
       });
+      const [publications, setPublications] = useState([]);
+      const [editionsMap, setEditionsMap] = useState({});
+      const [loading, setLoading] = useState(true);
 
-      const navigate = useNavigate()
+      const navigate = useNavigate();
+
+      useEffect(() => {
+            const fetchPublications = async () => {
+                  try {
+                        const res = await axios.get("/papers/get-publication");
+                        setPublications(res.data.publications);
+                        setLoading(false);
+                  } catch (err) {
+                        toast.error("Failed to load publications");
+                  }
+            };
+
+            fetchPublications();
+      }, []);
 
       const handleInputChange = (e) => {
             const { name, value } = e.target;
@@ -35,7 +52,24 @@ const AddUserForm = () => {
       const handlePermissionChange = (index, field, value) => {
             const updated = [...permissions];
             updated[index][field] = value;
+
+            if (field === "publicationId") {
+                  updated[index]["editionId"] = ""; // Reset editionId when publication changes
+                  if (value && !editionsMap[value]) {
+                        fetchEditions(value); // Fetch editions for the selected publication
+                  }
+            }
+
             setPermissions(updated);
+      };
+
+      const fetchEditions = async (publicationId) => {
+            try {
+                  const res = await axios.get(`/papers/get-edition?publicationId=${publicationId}`);
+                  setEditionsMap((prev) => ({ ...prev, [publicationId]: res.data.editions }));
+            } catch (err) {
+                  toast.error("Failed to load editions");
+            }
       };
 
       const handleSubmit = async (e) => {
@@ -56,12 +90,13 @@ const AddUserForm = () => {
             try {
                   await axios.post("/user/new", payload);
                   toast.success("User added successfully!");
-                  navigate('/profile')
-
+                  navigate("/profile");
             } catch (err) {
                   toast.error("Failed to add user");
             }
       };
+
+      if (loading) return <div className="text-center p-4">Loading...</div>;
 
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
@@ -133,27 +168,38 @@ const AddUserForm = () => {
                                                 {permissions.map((row, index) => (
                                                       <tr key={index} className="bg-white hover:bg-gray-50">
                                                             <td className="border px-3 py-2">
-                                                                  <input
-                                                                        type="text"
-                                                                        placeholder="Publication ID"
+                                                                  <select
                                                                         value={row.publicationId}
                                                                         onChange={(e) =>
                                                                               handlePermissionChange(index, "publicationId", e.target.value)
                                                                         }
                                                                         className="w-full border border-gray-300 p-2 rounded"
-                                                                  />
+                                                                  >
+                                                                        <option value="">-- Select Publication --</option>
+                                                                        {publications.map((pub) => (
+                                                                              <option key={pub.Publication_Id} value={pub.Publication_Id}>
+                                                                                    {pub.Publication_Name}
+                                                                              </option>
+                                                                        ))}
+                                                                  </select>
                                                             </td>
 
                                                             <td className="border px-3 py-2">
-                                                                  <input
-                                                                        type="text"
-                                                                        placeholder="Edition ID"
+                                                                  <select
                                                                         value={row.editionId}
                                                                         onChange={(e) =>
                                                                               handlePermissionChange(index, "editionId", e.target.value)
                                                                         }
                                                                         className="w-full border border-gray-300 p-2 rounded"
-                                                                  />
+                                                                        disabled={!row.publicationId}
+                                                                  >
+                                                                        <option value="">-- Select Edition --</option>
+                                                                        {(editionsMap[row.publicationId] || []).map((ed) => (
+                                                                              <option key={ed.Edition_Id} value={ed.Edition_Id}>
+                                                                                    {ed.Edition_Name}
+                                                                              </option>
+                                                                        ))}
+                                                                  </select>
                                                             </td>
 
                                                             <td className="border px-3 py-2">

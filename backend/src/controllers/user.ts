@@ -193,11 +193,11 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
         );
         if (permission === "") {
             return conn.query(
-              "DELETE FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?",
-              [userId, publicationId, editionId]
+                "DELETE FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?",
+                [userId, publicationId, editionId]
             );
-          }
-      
+        }
+
 
         if (existingPermission) {
             if (existingPermission.permission !== permission) {
@@ -228,7 +228,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
 export const getAllUsers = TryCatch(async (req, res, next) => {
 
     const conn = await getConnection();
-    const users = await conn.query("SELECT User_Id, User_Name, Email FROM user");
+    const users = await conn.query("SELECT User_Id, User_Name, Email ,isAdmin , isActive FROM user");
 
     const permissionsResults = await conn.query(
         `SELECT up.User_Id,
@@ -258,6 +258,8 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
     conn.end()
     const formattedUsers = users.map((user: any) => ({
         userId: user.User_Id,
+        isAdmin: user.isAdmin,
+        isActive: user.isActive,
         userName: user.User_Name,
         emailId: user.Email,
         permissions: permissionsMap[user.User_Id] || [],
@@ -278,3 +280,41 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
         message: "logout successfully"
     })
 }
+
+
+export const deleteUserPermission = TryCatch(async (
+    req: Request<{ userId?: string }, {}, { publicationId: string; editionId: string }>,
+    res,
+    next
+) => {
+    const { userId } = req.params;
+    const { publicationId, editionId } = req.body;
+
+    if (!userId || !publicationId || !editionId) {
+        return next(new ErrorHandler("User ID, Publication ID, and Edition ID are required", 400));
+    }
+
+    const conn = await getConnection();
+
+    const [user] = await conn.query("SELECT * FROM user WHERE User_Id = ?", [userId]);
+
+    if (!user) {
+        conn.end();
+        return next(new ErrorHandler("User not found", 404));
+    }
+
+
+    const {affectedRows} = await conn.query(
+        "DELETE FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?",
+        [userId, publicationId, editionId]
+    );
+
+
+    conn.end();
+
+    return res.status(200).json({
+        success: true,
+        message:affectedRows >0 ? `${affectedRows} Permission deleted successfully` : "Permission Already deleted"
+    });
+});
+
