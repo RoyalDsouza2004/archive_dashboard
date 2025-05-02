@@ -89,7 +89,7 @@ export const authenticatedUser = async (req: Request, res: Response) => {
       const token = req.cookies.token;
 
       if (!token) {
-            res.status(403).json({ authenticated: false });
+            res.status(401).json({ authenticated: false });
       }
 
       try {
@@ -102,14 +102,14 @@ export const authenticatedUser = async (req: Request, res: Response) => {
             );
 
             if (!isActive) (
-                  res.status(403).cookie("token", "", {
+                  res.status(401).cookie("token", "", {
                         expires: new Date(Date.now()),
                   }).json({ authenticated: false })
             )
 
             res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName })
       } catch (err) {
-            res.status(403).cookie("token", "", {
+            res.status(401).cookie("token", "", {
                   expires: new Date(Date.now()),
             }).json({ authenticated: false });
       }
