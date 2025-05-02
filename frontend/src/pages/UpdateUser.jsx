@@ -141,10 +141,10 @@ const UpdateUser = () => {
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
                   <h2 className="text-2xl font-bold text-center mb-6">Update User: {user.userName}</h2>
-                  <div className="flex mb-4 absolute top-32 left-16">
+                  <div className="flex mb-4 absolute top-32 max-lg:top-36 left-16 max-lg:left-8">
                         <button
                               onClick={() => navigate(-1)}
-                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 max-lg:px-2 max-lg:py-1 "
                         >
                               🔙 Back to Profile
                         </button>
