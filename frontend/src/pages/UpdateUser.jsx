@@ -17,6 +17,10 @@ const UpdateUser = () => {
                   try {
                         const res = await axios.get(`/user/${userId}`);
                         setUser(res.data.user);
+
+                        // Preload editions for existing permissions
+                        const uniquePublicationIds = [...new Set(res.data.user.permissions.map(p => p.publicationId))];
+                        uniquePublicationIds.forEach(id => fetchEditions(id));
                   } catch (err) {
                         toast.error("Failed to load user data");
                         navigate("/profile");
@@ -49,18 +53,28 @@ const UpdateUser = () => {
             }
       };
 
-      const handleNewPermissionChange = (index, field, value) => {
-            const updated = [...newPermissions];
-            updated[index][field] = value;
+      const handlePermissionChange = (index, field, value, isExisting = false) => {
+            if (isExisting) {
+                  const updated = [...user.permissions];
+                  updated[index][field] = value;
 
-            if (field === "publicationId") {
-                  updated[index]["editionId"] = "";
-                  if (!editionsMap[value]) {
+                  if (field === "publicationId") {
+                        updated[index]["editionId"] = "";
                         fetchEditions(value);
                   }
-            }
 
-            setNewPermissions(updated);
+                  setUser({ ...user, permissions: updated });
+            } else {
+                  const updated = [...newPermissions];
+                  updated[index][field] = value;
+
+                  if (field === "publicationId") {
+                        updated[index]["editionId"] = "";
+                        fetchEditions(value);
+                  }
+
+                  setNewPermissions(updated);
+            }
       };
 
       const handleAddPermissionRow = () => {
@@ -76,6 +90,27 @@ const UpdateUser = () => {
             setUser({ ...user, [field]: !user[field] });
       };
 
+      const handleDeletePermission = async (publicationId, editionId) => {
+            try {
+                  const res = await axios.delete(`/user/${userId}/permission`, {
+                        data: { publicationId, editionId },
+                  });
+                  setUser((prev) => ({
+                        ...prev,
+                        permissions: prev.permissions.filter(
+                              (perm) =>
+                                    !(perm.publicationId === publicationId && perm.editionId === editionId)
+                        ),
+                  }));
+
+                  if (res.data.success) {
+                        toast.success(res.data.message);
+                  }
+            } catch (err) {
+                  toast.error("Failed to delete permission");
+            }
+      };
+
       const handleSubmit = async (e) => {
             e.preventDefault();
             try {
@@ -85,7 +120,7 @@ const UpdateUser = () => {
                               editionId: perm.editionId,
                               permission: perm.permission,
                         })),
-                        ...newPermissions
+                        ...newPermissions,
                   ];
 
                   await axios.put(`/user/${userId}`, {
@@ -101,33 +136,19 @@ const UpdateUser = () => {
             }
       };
 
-      const handleDeletePermission = async (publicationId, editionId) => {
-            try {
-              const res = await axios.delete(`/user/${userId}/permission`, {
-                data: { publicationId, editionId }
-              });
-              setUser((prev) => ({
-                ...prev,
-                permissions: prev.permissions.filter(
-                  (perm) => !(perm.publicationId === publicationId && perm.editionId === editionId)
-                ),
-              }));
-
-              if(res.data.success){
-                  toast.success(res.data.message);
-              }
-              
-            } catch (err) {
-              toast.error(res.err.message);
-            }
-          };
-          
-
       if (loading || !user) return <div className="text-center p-4">Loading...</div>;
 
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
                   <h2 className="text-2xl font-bold text-center mb-6">Update User: {user.userName}</h2>
+                  <div className="flex mb-4 absolute top-32 left-16">
+                        <button
+                              onClick={() => navigate(-1)}
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        >
+                              🔙 Back to Profile
+                        </button>
+                  </div>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="flex justify-center">
@@ -176,28 +197,47 @@ const UpdateUser = () => {
                                           <tbody>
                                                 {user.permissions.map((perm, index) => (
                                                       <tr key={`existing-${index}`} className="bg-gray-100 text-center">
-                                                            <td className="border px-3 py-2">{perm.publicationName || perm.publicationId}</td>
-                                                            <td className="border px-3 py-2">{perm.editionName || perm.editionId}</td>
-                                                            <td className="border px-3 py-2">{perm.permission === "r" ? "Read" : perm.permission === "w" ? "Write" : "Read/Write"}</td>
+                                                            <td className="border px-3 py-2">
+                                                                  {publications.find(p => p.Publication_Id === perm.publicationId)?.Publication_Name || perm.publicationId}
+                                                            </td>
+                                                            <td className="border px-3 py-2">
+                                                                  {
+                                                                        editionsMap[perm.publicationId]?.find(e => e.Edition_Id === perm.editionId)?.Edition_Name || perm.editionId
+                                                                  }
+                                                            </td>
+                                                            <td className="border px-3 py-2">
+                                                                  <select
+                                                                        value={perm.permission}
+                                                                        onChange={(e) => handlePermissionChange(index, "permission", e.target.value, true)}
+                                                                        className="w-full border border-gray-300 p-2 rounded"
+                                                                  >
+                                                                        <option value="">-- Select Permission --</option>
+                                                                        <option value="r">Read</option>
+                                                                        <option value="w">Write</option>
+                                                                        <option value="rw">Read/Write</option>
+                                                                  </select>
+                                                            </td>
                                                             <td className="border px-3 py-2">
                                                                   <button
                                                                         type="button"
-                                                                        onClick={() => handleDeletePermission(perm.publicationId, perm.editionId)}
+                                                                        onClick={() =>
+                                                                              handleDeletePermission(perm.publicationId, perm.editionId)
+                                                                        }
                                                                         className="text-red-600 hover:text-red-800"
                                                                   >
                                                                         🗑️
                                                                   </button>
                                                             </td>
-
                                                       </tr>
                                                 ))}
+
                                                 {newPermissions.map((perm, index) => (
                                                       <tr key={`new-${index}`} className="bg-white text-center">
                                                             <td className="border px-3 py-2">
                                                                   <select
                                                                         value={perm.publicationId}
                                                                         onChange={(e) =>
-                                                                              handleNewPermissionChange(index, "publicationId", e.target.value)
+                                                                              handlePermissionChange(index, "publicationId", e.target.value)
                                                                         }
                                                                         className="w-full border border-gray-300 p-2 rounded"
                                                                   >
@@ -213,7 +253,7 @@ const UpdateUser = () => {
                                                                   <select
                                                                         value={perm.editionId}
                                                                         onChange={(e) =>
-                                                                              handleNewPermissionChange(index, "editionId", e.target.value)
+                                                                              handlePermissionChange(index, "editionId", e.target.value)
                                                                         }
                                                                         className="w-full border border-gray-300 p-2 rounded"
                                                                         disabled={!perm.publicationId}
@@ -230,7 +270,7 @@ const UpdateUser = () => {
                                                                   <select
                                                                         value={perm.permission}
                                                                         onChange={(e) =>
-                                                                              handleNewPermissionChange(index, "permission", e.target.value)
+                                                                              handlePermissionChange(index, "permission", e.target.value)
                                                                         }
                                                                         className="w-full border border-gray-300 p-2 rounded"
                                                                   >

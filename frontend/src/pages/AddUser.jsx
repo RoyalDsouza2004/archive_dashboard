@@ -100,6 +100,14 @@ const AddUserForm = () => {
 
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
+                  <div className="flex mb-4 absolute top-32 left-16">
+                        <button
+                              onClick={() => navigate(-1)}
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        >
+                              🔙 Back to Profile
+                        </button>
+                  </div>
                   <h2 className="text-2xl font-bold text-center mb-6">Add User</h2>
                   <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="flex justify-center">
