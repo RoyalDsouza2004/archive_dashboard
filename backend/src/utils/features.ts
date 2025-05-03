@@ -13,7 +13,7 @@ const poolConfig = {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       port: parseInt(process.env.DB_PORT || '3307'),
-      connectionLimit: 10,
+      connectionLimit: 50,
 };
 
 
