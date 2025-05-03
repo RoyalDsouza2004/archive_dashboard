@@ -31,6 +31,8 @@ const Navbar = ({ userName = "Admin", setIsLoggedIn, isAdmin }) => {
       if (res.data?.success) {
         toast.success(res.data.message);
         setIsLoggedIn(false);
+        localStorage.removeItem("searchInputs")
+        localStorage.removeItem("searchResults")
         navigate("/login");
       } else {
         toast.error("Logout failed");
