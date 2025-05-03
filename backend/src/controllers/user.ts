@@ -28,13 +28,14 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 
 
     const userId: string = uuid()
+    const hashedPassword = await bcrypt.hash(password, 10);
 
 
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
         userName,
-        password,
+        hashedPassword,
         isAdmin
     ]);
 
@@ -73,9 +74,11 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
 
-    if (user.Password !== password) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) {
+        return next(new ErrorHandler("Invalid email or password", 401));
     }
+
 
     if (!user.isActive) {
         return next(new ErrorHandler("Please ask Admin to Access again", 404))
@@ -182,7 +185,8 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     }
 
     if (password) {
-        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [password, userId]);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [hashedPassword, userId]);
     }
 
     
@@ -241,7 +245,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
 export const getAllUsers = TryCatch(async (req, res, next) => {
 
     const conn = await getConnection();
-    const users = await conn.query("SELECT User_Id, User_Name, Email ,isAdmin , isActive FROM user");
+    const users = await conn.query("SELECT User_Id, User_Name, Email ,isAdmin , isActive FROM user order by User_Name");
 
     const permissionsResults = await conn.query(
         `SELECT up.User_Id,

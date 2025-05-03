@@ -1,6 +1,7 @@
 import { TryCatch } from "../middlewares/error.js";
 import { getConnection, sendCookie } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import jwt from "jsonwebtoken";
 export const addUser = TryCatch(async (req, res, next) => {
@@ -14,11 +15,12 @@ export const addUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("User already exist", 404));
     }
     const userId = uuid();
+    const hashedPassword = await bcrypt.hash(password, 10);
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
         userName,
-        password,
+        hashedPassword,
         isAdmin
     ]);
     if (permissions && permissions.length > 0) {
@@ -43,8 +45,9 @@ export const loginUser = TryCatch(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
-    if (user.Password !== password) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) {
+        return next(new ErrorHandler("Invalid email or password", 401));
     }
     if (!user.isActive) {
         return next(new ErrorHandler("Please ask Admin to Access again", 404));
@@ -117,7 +120,8 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
         await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
     }
     if (password) {
-        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [password, userId]);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [hashedPassword, userId]);
     }
     if (!isAdmin && !isActive && decoded.id === userId) {
         await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
@@ -150,7 +154,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
 });
 export const getAllUsers = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
-    const users = await conn.query("SELECT User_Id, User_Name, Email ,isAdmin , isActive FROM user");
+    const users = await conn.query("SELECT User_Id, User_Name, Email ,isAdmin , isActive FROM user order by User_Name");
     const permissionsResults = await conn.query(`SELECT up.User_Id,
             p.Publication_Name, 
             e.Edition_Name, 
