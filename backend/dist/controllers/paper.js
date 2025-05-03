@@ -5,7 +5,7 @@ import path from "path";
 export const getPublication = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const publications = await conn.query("select Publication_Id ,Publication_Name from publication");
-    conn.end();
+    conn.release();
     res.status(200).json({
         success: true,
         publications
@@ -19,7 +19,7 @@ export const getEdition = TryCatch(async (req, res, next) => {
     const editions = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ?;`, publicationId);
-    conn.end();
+    conn.release();
     res.status(200).json({
         success: true,
         editions
@@ -41,7 +41,7 @@ export const searchPapers = TryCatch(async (req, res, next) => {
            JOIN sub_edition se ON l.Sub_Edition_Id = se.Sub_Edition_Id
            WHERE se.Publication_Id = ? AND se.Edition_Id = ? AND l.Date = ?`, [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]);
     }
-    conn.end();
+    conn.release();
     const formattedLogs = logs.reduce((acc, log) => {
         const pageRange = log.Page_No_From === log.Page_No_To ? log.Page_No_From : `${log.Page_No_From}-${log.Page_No_To}`;
         const pdfName = path.basename(log.path);

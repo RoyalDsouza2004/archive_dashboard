@@ -15,9 +15,9 @@ const storage = multer.diskStorage({
             const editionPromise = conn.query(`SELECT e.Edition_Name FROM edition e 
                           JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
                           WHERE pe.Publication_Id = ? AND pe.Edition_Id = ?`, [publicationId.toUpperCase(), editionId.toUpperCase()]);
-            conn.end();
+            conn.release();
             const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise]);
-            conn.end();
+            conn.release();
             if (!publication || !edition) {
                 return callback(new ErrorHandler("Publication or Edition not found", 400), "");
             }

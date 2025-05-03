@@ -46,7 +46,7 @@ export const getNewNewspapers = TryCatch(async (req, res, next) => {
         }
     });
     const filesStatus = await Promise.all(checkFilesPromises);
-    conn.end();
+    conn.release();
     res.status(200).json({
         success: true,
         folderPath,
@@ -95,7 +95,7 @@ export const addNewNewsPapers = TryCatch(async (req, res, next) => {
         return { file, subEditionId, pageNo };
     });
     const subEditionResults = (await Promise.all(subEditionPromises)).filter(Boolean);
-    conn.end();
+    conn.release();
     const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
         const filePath = path.join(folderPath, file);
         const relativeFilePath = filePath.replace(process.env.FOLDER_PATH, '\\Storage').replace(/\\/g, "/");
@@ -121,7 +121,7 @@ export const addNewNewsPapers = TryCatch(async (req, res, next) => {
 export const getPublication = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const publications = await conn.query("select Publication_Id ,Publication_Name from publication where isNewsPaper = true");
-    conn.end();
+    conn.release();
     res.status(200).json({
         success: true,
         publications

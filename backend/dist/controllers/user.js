@@ -30,7 +30,7 @@ export const addUser = TryCatch(async (req, res, next) => {
         });
         await Promise.all(permissionQueries);
     }
-    conn.end();
+    conn.release();
     return res.status(200).json({
         success: true,
         message: "User Created Successfully",
@@ -54,7 +54,7 @@ export const loginUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Please ask Admin to Access again", 404));
     }
     const permissionsResults = await conn.query("SELECT Publication_Id, Edition_Id, permission FROM user_permission WHERE User_Id = ?", [user.User_Id]);
-    conn.end();
+    conn.release();
     const permissions = permissionsResults.map((perm) => ({
         publicationId: perm.Publication_Id,
         editionId: perm.Edition_Id,
@@ -105,8 +105,8 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     const { permissions, isAdmin, isActive, emailId, password } = req.body;
     const { token } = req.cookies;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!userId || !permissions || permissions.length === 0) {
-        return next(new ErrorHandler("User ID and permissions are required", 400));
+    if (!userId) {
+        return next(new ErrorHandler("User ID is required", 400));
     }
     const conn = await getConnection();
     const [user] = await conn.query("SELECT User_Id, Email FROM user WHERE User_Id = ?", [userId]);
@@ -132,6 +132,13 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
             .json({ authenticated: false });
     }
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
+    if (!permissions || permissions.length === 0) {
+        conn.release();
+        return res.status(200).json({
+            success: true,
+            message: "User updated successfully (no permission changes)",
+        });
+    }
     const queries = permissions.map(async ({ publicationId, editionId, permission }) => {
         const [existingPermission] = await conn.query("SELECT permission FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?", [userId, publicationId, editionId]);
         if (permission === "") {
@@ -147,7 +154,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
         }
     });
     await Promise.all(queries);
-    conn.end();
+    conn.release();
     return res.status(200).json({
         success: true,
         message: "Permissions updated successfully",
@@ -176,7 +183,7 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
             permission: perm.permission
         });
     });
-    conn.end();
+    conn.release();
     const formattedUsers = users.map((user) => ({
         userId: user.User_Id,
         isAdmin: user.isAdmin,
@@ -207,11 +214,11 @@ export const deleteUserPermission = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const [user] = await conn.query("SELECT * FROM user WHERE User_Id = ?", [userId]);
     if (!user) {
-        conn.end();
+        conn.release();
         return next(new ErrorHandler("User not found", 404));
     }
     const { affectedRows } = await conn.query("DELETE FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?", [userId, publicationId, editionId]);
-    conn.end();
+    conn.release();
     return res.status(200).json({
         success: true,
         message: affectedRows > 0 ? `${affectedRows} Permission deleted successfully` : "Permission Already deleted"
