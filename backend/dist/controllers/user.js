@@ -1,7 +1,6 @@
 import { TryCatch } from "../middlewares/error.js";
 import { getConnection, sendCookie } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
-import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import jwt from "jsonwebtoken";
 export const addUser = TryCatch(async (req, res, next) => {
@@ -14,13 +13,12 @@ export const addUser = TryCatch(async (req, res, next) => {
     if (user) {
         return next(new ErrorHandler("User already exist", 404));
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuid();
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
         userName,
-        hashedPassword,
+        password,
         isAdmin
     ]);
     if (permissions && permissions.length > 0) {
@@ -45,8 +43,7 @@ export const loginUser = TryCatch(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
-    const isMatch = await bcrypt.compare(password, user.Password);
-    if (!isMatch) {
+    if (user.Password !== password) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
     if (!user.isActive) {
@@ -101,16 +98,26 @@ export const getUser = TryCatch(async (req, res, next) => {
 });
 export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     const { userId } = req.params;
-    const { permissions, isAdmin, isActive } = req.body;
+    const { permissions, isAdmin, isActive, emailId, password } = req.body;
     const { token } = req.cookies;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId || !permissions || permissions.length === 0) {
         return next(new ErrorHandler("User ID and permissions are required", 400));
     }
     const conn = await getConnection();
-    const [user] = await conn.query("SELECT User_Id FROM user WHERE User_Id = ?", [userId]);
+    const [user] = await conn.query("SELECT User_Id, Email FROM user WHERE User_Id = ?", [userId]);
     if (!user) {
         return next(new ErrorHandler("User not found", 404));
+    }
+    if (emailId !== user.Email) {
+        const [emailExists] = await conn.query("SELECT * FROM user WHERE Email = ?", [emailId]);
+        if (emailExists) {
+            return next(new ErrorHandler("Email is already taken", 400));
+        }
+        await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
+    }
+    if (password) {
+        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [password, userId]);
     }
     if (!isAdmin && !isActive && decoded.id === userId) {
         await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);

@@ -2,26 +2,29 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import toast from "react-hot-toast";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const UpdateUser = () => {
       const { userId } = useParams();
       const navigate = useNavigate();
       const [user, setUser] = useState(null);
+      const [formData, setFormData] = useState({ emailId: "", password: "" });
       const [loading, setLoading] = useState(true);
       const [publications, setPublications] = useState([]);
       const [editionsMap, setEditionsMap] = useState({});
       const [newPermissions, setNewPermissions] = useState([]);
+      const [showPassword, setShowPassword] = useState(false);
 
       useEffect(() => {
             const fetchUser = async () => {
                   try {
                         const res = await axios.get(`/user/${userId}`);
-                        setUser(res.data.user);
-
-                        // Preload editions for existing permissions
-                        const uniquePublicationIds = [...new Set(res.data.user.permissions.map(p => p.publicationId))];
-                        uniquePublicationIds.forEach(id => fetchEditions(id));
-                  } catch (err) {
+                        const userData = res.data.user;
+                        setUser(userData);
+                        setFormData({ emailId: userData.emailId || "", password: "" });
+                        const uniquePubIds = [...new Set(userData.permissions.map(p => p.publicationId))];
+                        uniquePubIds.forEach(id => fetchEditions(id));
+                  } catch {
                         toast.error("Failed to load user data");
                         navigate("/profile");
                   } finally {
@@ -32,9 +35,9 @@ const UpdateUser = () => {
             const fetchPublications = async () => {
                   try {
                         const res = await axios.get("/papers/get-publication");
-                        if (!res.data?.success) throw new Error("Invalid publication data");
+                        if (!res.data?.success) throw new Error();
                         setPublications(res.data.publications);
-                  } catch (err) {
+                  } catch {
                         toast.error("Failed to load publications");
                   }
             };
@@ -46,9 +49,9 @@ const UpdateUser = () => {
       const fetchEditions = async (publicationId) => {
             try {
                   const res = await axios.get(`/papers/get-edition?publicationId=${publicationId}`);
-                  if (!res.data?.success) throw new Error("Invalid edition data");
+                  if (!res.data?.success) throw new Error();
                   setEditionsMap((prev) => ({ ...prev, [publicationId]: res.data.editions }));
-            } catch (err) {
+            } catch {
                   toast.error("Failed to load editions");
             }
       };
@@ -57,22 +60,18 @@ const UpdateUser = () => {
             if (isExisting) {
                   const updated = [...user.permissions];
                   updated[index][field] = value;
-
                   if (field === "publicationId") {
-                        updated[index]["editionId"] = "";
+                        updated[index].editionId = "";
                         fetchEditions(value);
                   }
-
                   setUser({ ...user, permissions: updated });
             } else {
                   const updated = [...newPermissions];
                   updated[index][field] = value;
-
                   if (field === "publicationId") {
-                        updated[index]["editionId"] = "";
+                        updated[index].editionId = "";
                         fetchEditions(value);
                   }
-
                   setNewPermissions(updated);
             }
       };
@@ -82,8 +81,7 @@ const UpdateUser = () => {
       };
 
       const handleRemovePermissionRow = (index) => {
-            const updated = newPermissions.filter((_, i) => i !== index);
-            setNewPermissions(updated);
+            setNewPermissions(newPermissions.filter((_, i) => i !== index));
       };
 
       const handleCheckboxChange = (field) => {
@@ -92,21 +90,13 @@ const UpdateUser = () => {
 
       const handleDeletePermission = async (publicationId, editionId) => {
             try {
-                  const res = await axios.delete(`/user/${userId}/permission`, {
-                        data: { publicationId, editionId },
-                  });
+                  const res = await axios.delete(`/user/${userId}/permission`, { data: { publicationId, editionId } });
                   setUser((prev) => ({
                         ...prev,
-                        permissions: prev.permissions.filter(
-                              (perm) =>
-                                    !(perm.publicationId === publicationId && perm.editionId === editionId)
-                        ),
+                        permissions: prev.permissions.filter(p => !(p.publicationId === publicationId && p.editionId === editionId))
                   }));
-
-                  if (res.data.success) {
-                        toast.success(res.data.message);
-                  }
-            } catch (err) {
+                  if (res.data.success) toast.success(res.data.message);
+            } catch {
                   toast.error("Failed to delete permission");
             }
       };
@@ -114,24 +104,22 @@ const UpdateUser = () => {
       const handleSubmit = async (e) => {
             e.preventDefault();
             try {
-                  const cleanedPermissions = [
-                        ...user.permissions.map((perm) => ({
-                              publicationId: perm.publicationId,
-                              editionId: perm.editionId,
-                              permission: perm.permission,
-                        })),
+                  const finalPermissions = [
+                        ...user.permissions.map(p => ({ publicationId: p.publicationId, editionId: p.editionId, permission: p.permission })),
                         ...newPermissions,
                   ];
 
                   await axios.put(`/user/${userId}`, {
-                        permissions: cleanedPermissions,
+                        emailId: formData.emailId,
+                        ...(formData.password && { password: formData.password }),
+                        permissions: finalPermissions,
                         isAdmin: user.isAdmin,
                         isActive: user.isActive,
                   });
 
                   toast.success("User updated successfully!");
                   navigate("/profile");
-            } catch (err) {
+            } catch {
                   toast.error("Update failed");
             }
       };
@@ -140,7 +128,6 @@ const UpdateUser = () => {
 
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
-                  <h2 className="text-2xl font-bold text-center mb-6">Update User: {user.userName}</h2>
                   <div className="flex mb-4 absolute top-32 max-lg:top-36 left-16 max-lg:left-8">
                         <button
                               onClick={() => navigate(-1)}
@@ -149,18 +136,38 @@ const UpdateUser = () => {
                               🔙 Back to Profile
                         </button>
                   </div>
-
+                  <h2 className="text-2xl font-bold text-center mb-6">Update User: {user.userName}</h2>
                   <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="flex justify-center">
+                        <div>
+                              <label className="block font-medium">Email</label>
                               <input
                                     type="email"
-                                    value={user.emailId}
-                                    disabled
-                                    className="w-3/4 border border-gray-300 p-2 rounded-md bg-gray-100"
+                                    value={formData.emailId}
+                                    onChange={(e) => setFormData({ ...formData, emailId: e.target.value })}
+                                    className="w-full border border-gray-300 p-2 rounded"
+                                    required
                               />
                         </div>
 
-                        <div className="flex justify-center items-center gap-4">
+                        <div className="relative">
+                              <label className="block font-medium">Password</label>
+                              <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="Leave blank to keep current password"
+                                    className="w-full border border-gray-300 p-2 rounded"
+                              />
+                              <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute right-4 top-[42px] transform -translate-y-1/2 text-gray-500"
+                              >
+                                    {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                              </button>
+                        </div>
+
+                        <div className="flex items-center gap-6">
                               <label className="flex items-center">
                                     <input
                                           type="checkbox"
@@ -168,7 +175,7 @@ const UpdateUser = () => {
                                           onChange={() => handleCheckboxChange("isAdmin")}
                                           className="mr-2"
                                     />
-                                    <span className="font-medium">Is Admin</span>
+                                    Is Admin
                               </label>
 
                               <label className="flex items-center">
@@ -178,14 +185,14 @@ const UpdateUser = () => {
                                           onChange={() => handleCheckboxChange("isActive")}
                                           className="mr-2"
                                     />
-                                    <span className="font-medium">Is Active</span>
+                                    Is Active
                               </label>
                         </div>
 
                         <div>
-                              <h4 className="text-lg font-bold mb-2">User Permissions</h4>
+                              <h4 className="text-lg font-bold mb-2">Permissions</h4>
                               <div className="overflow-x-auto">
-                                    <table className="w-full border border-gray-300 text-sm">
+                                    <table className="w-full border text-sm">
                                           <thead className="bg-blue-600 text-white text-center">
                                                 <tr>
                                                       <th className="border px-3 py-2">Publication</th>
@@ -196,22 +203,16 @@ const UpdateUser = () => {
                                           </thead>
                                           <tbody>
                                                 {user.permissions.map((perm, index) => (
-                                                      <tr key={`existing-${index}`} className="bg-gray-100 text-center">
-                                                            <td className="border px-3 py-2">
-                                                                  {publications.find(p => p.Publication_Id === perm.publicationId)?.Publication_Name || perm.publicationId}
-                                                            </td>
-                                                            <td className="border px-3 py-2">
-                                                                  {
-                                                                        editionsMap[perm.publicationId]?.find(e => e.Edition_Id === perm.editionId)?.Edition_Name || perm.editionId
-                                                                  }
-                                                            </td>
+                                                      <tr key={`exist-${index}`} className="bg-gray-100 text-center">
+                                                            <td className="border px-3 py-2">{publications.find(p => p.Publication_Id === perm.publicationId)?.Publication_Name || perm.publicationId}</td>
+                                                            <td className="border px-3 py-2">{editionsMap[perm.publicationId]?.find(e => e.Edition_Id === perm.editionId)?.Edition_Name || perm.editionId}</td>
                                                             <td className="border px-3 py-2">
                                                                   <select
                                                                         value={perm.permission}
                                                                         onChange={(e) => handlePermissionChange(index, "permission", e.target.value, true)}
-                                                                        className="w-full border border-gray-300 p-2 rounded"
+                                                                        className="w-full border p-1 rounded"
                                                                   >
-                                                                        <option value="">-- Select Permission --</option>
+                                                                        <option value="">Select</option>
                                                                         <option value="r">Read</option>
                                                                         <option value="w">Write</option>
                                                                         <option value="rw">Read/Write</option>
@@ -220,61 +221,47 @@ const UpdateUser = () => {
                                                             <td className="border px-3 py-2">
                                                                   <button
                                                                         type="button"
-                                                                        onClick={() =>
-                                                                              handleDeletePermission(perm.publicationId, perm.editionId)
-                                                                        }
+                                                                        onClick={() => handleDeletePermission(perm.publicationId, perm.editionId)}
                                                                         className="text-red-600 hover:text-red-800"
-                                                                  >
-                                                                        🗑️
-                                                                  </button>
+                                                                  >🗑️</button>
                                                             </td>
                                                       </tr>
                                                 ))}
 
                                                 {newPermissions.map((perm, index) => (
-                                                      <tr key={`new-${index}`} className="bg-white text-center">
+                                                      <tr key={`new-${index}`} className="text-center">
                                                             <td className="border px-3 py-2">
                                                                   <select
                                                                         value={perm.publicationId}
-                                                                        onChange={(e) =>
-                                                                              handlePermissionChange(index, "publicationId", e.target.value)
-                                                                        }
-                                                                        className="w-full border border-gray-300 p-2 rounded"
+                                                                        onChange={(e) => handlePermissionChange(index, "publicationId", e.target.value)}
+                                                                        className="w-full border p-1 rounded"
                                                                   >
-                                                                        <option value="">-- Select Publication --</option>
-                                                                        {publications.map((pub) => (
-                                                                              <option key={pub.Publication_Id} value={pub.Publication_Id}>
-                                                                                    {pub.Publication_Name}
-                                                                              </option>
+                                                                        <option value="">Select</option>
+                                                                        {publications.map(p => (
+                                                                              <option key={p.Publication_Id} value={p.Publication_Id}>{p.Publication_Name}</option>
                                                                         ))}
                                                                   </select>
                                                             </td>
                                                             <td className="border px-3 py-2">
                                                                   <select
                                                                         value={perm.editionId}
-                                                                        onChange={(e) =>
-                                                                              handlePermissionChange(index, "editionId", e.target.value)
-                                                                        }
-                                                                        className="w-full border border-gray-300 p-2 rounded"
+                                                                        onChange={(e) => handlePermissionChange(index, "editionId", e.target.value)}
                                                                         disabled={!perm.publicationId}
+                                                                        className="w-full border p-1 rounded"
                                                                   >
-                                                                        <option value="">-- Select Edition --</option>
-                                                                        {(editionsMap[perm.publicationId] || []).map((ed) => (
-                                                                              <option key={ed.Edition_Id} value={ed.Edition_Id}>
-                                                                                    {ed.Edition_Name}
-                                                                              </option>
+                                                                        <option value="">Select</option>
+                                                                        {(editionsMap[perm.publicationId] || []).map(ed => (
+                                                                              <option key={ed.Edition_Id} value={ed.Edition_Id}>{ed.Edition_Name}</option>
                                                                         ))}
                                                                   </select>
                                                             </td>
                                                             <td className="border px-3 py-2">
                                                                   <select
                                                                         value={perm.permission}
-                                                                        onChange={(e) =>
-                                                                              handlePermissionChange(index, "permission", e.target.value)
-                                                                        }
-                                                                        className="w-full border border-gray-300 p-2 rounded"
+                                                                        onChange={(e) => handlePermissionChange(index, "permission", e.target.value)}
+                                                                        className="w-full border p-1 rounded"
                                                                   >
-                                                                        <option value="">-- Select Permission --</option>
+                                                                        <option value="">Select</option>
                                                                         <option value="r">Read</option>
                                                                         <option value="w">Write</option>
                                                                         <option value="rw">Read/Write</option>
@@ -285,34 +272,27 @@ const UpdateUser = () => {
                                                                         type="button"
                                                                         onClick={() => handleRemovePermissionRow(index)}
                                                                         className="text-red-600 hover:text-red-800"
-                                                                  >
-                                                                        🗑️
-                                                                  </button>
+                                                                  >🗑️</button>
                                                             </td>
                                                       </tr>
                                                 ))}
                                           </tbody>
                                     </table>
                               </div>
-
                               <div className="text-center mt-4">
                                     <button
                                           type="button"
                                           onClick={handleAddPermissionRow}
-                                          className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-                                    >
-                                          ➕ Add Permission Row
-                                    </button>
+                                          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                                    >➕ Add Permission</button>
                               </div>
                         </div>
 
-                        <div className="text-center mt-6">
+                        <div className="text-center">
                               <button
                                     type="submit"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded font-semibold"
-                              >
-                                    ✅ Update User
-                              </button>
+                                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                              >✅ Update User</button>
                         </div>
                   </form>
             </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 const AddUserForm = () => {
       const [permissions, setPermissions] = useState([
@@ -16,6 +17,7 @@ const AddUserForm = () => {
       const [publications, setPublications] = useState([]);
       const [editionsMap, setEditionsMap] = useState({});
       const [loading, setLoading] = useState(true);
+      const [showPassword, setShowPassword] = useState(false);
 
       const navigate = useNavigate();
 
@@ -134,9 +136,9 @@ const AddUserForm = () => {
                               />
                         </div>
 
-                        <div className="flex justify-center">
+                        <div className="flex justify-center relative">
                               <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     placeholder="Password"
                                     required
@@ -144,6 +146,13 @@ const AddUserForm = () => {
                                     onChange={handleInputChange}
                                     className="w-3/4 border border-gray-300 p-2 rounded-md"
                               />
+                              <button
+                                    type="button"
+                                    onClick={()=> setShowPassword((prev) => !prev)}
+                                    className="absolute right-16 top-1/2 transform -translate-y-1/2 text-gray-500"
+                              >
+                                    {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                              </button>
                         </div>
 
                         <div className="flex justify-center items-center gap-3">

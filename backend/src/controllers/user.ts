@@ -26,7 +26,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
         return next(new ErrorHandler("User already exist", 404))
     }
 
-    const hashedPassword: string = await bcrypt.hash(password, 10);
+
     const userId: string = uuid()
 
 
@@ -34,7 +34,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
         userId,
         email,
         userName,
-        hashedPassword,
+        password,
         isAdmin
     ]);
 
@@ -73,8 +73,7 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
 
-    const isMatch = await bcrypt.compare(password, user.Password);
-    if (!isMatch) {
+    if (user.Password !== password) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
 
@@ -152,9 +151,9 @@ export const getUser = TryCatch(async (req, res, next) => {
 
 })
 
-export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?: string }, {}, { permissions: PermissionType[], isAdmin: boolean, isActive: boolean }>, res, next) => {
+export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?: string }, {}, { permissions: PermissionType[], isAdmin: boolean, isActive: boolean  ,emailId?:string, password?:string}>, res, next) => {
     const { userId } = req.params;
-    const { permissions, isAdmin, isActive } = req.body;
+    const { permissions, isAdmin, isActive , emailId ,password} = req.body;
     const { token } = req.cookies;
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string, isAdmin: boolean }
@@ -166,7 +165,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     const conn = await getConnection();
 
     const [user] = await conn.query(
-        "SELECT User_Id FROM user WHERE User_Id = ?",
+        "SELECT User_Id, Email FROM user WHERE User_Id = ?",
         [userId]
     );
 
@@ -174,8 +173,22 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
         return next(new ErrorHandler("User not found", 404));
     }
 
+    if (emailId !== user.Email) {
+        const [emailExists] = await conn.query("SELECT * FROM user WHERE Email = ?", [emailId]);
+        if (emailExists) {
+            return next(new ErrorHandler("Email is already taken", 400));
+        }
+        await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
+    }
+
+    if (password) {
+        await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [password, userId]);
+    }
+
+    
     if (!isAdmin && !isActive && decoded.id === userId) {
         await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
+
 
         return res
             .status(401)
