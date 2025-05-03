@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { toast } from "react-hot-toast";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
-const Login = ({ onLoginSuccess, isLoggedIn , setUserName , setIsAdmin }) => {
+const Login = ({ onLoginSuccess, isLoggedIn, setUserName, setIsAdmin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/"); 
+      navigate("/");
     }
   }, [isLoggedIn, navigate]);
 
@@ -33,7 +36,7 @@ const Login = ({ onLoginSuccess, isLoggedIn , setUserName , setIsAdmin }) => {
         onLoginSuccess();
         setUserName(res.data.userName)
         setIsAdmin(res.data.isAdmin)
-        navigate("/"); 
+        navigate("/");
       } else {
         throw new error("Login failed");
       }
@@ -60,15 +63,21 @@ const Login = ({ onLoginSuccess, isLoggedIn , setUserName , setIsAdmin }) => {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-4 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="w-full p-2 mb-4 border rounded"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-2 top-5 transform -translate-y-1/2 text-gray-500"
+          >{showPassword ? <FaRegEye /> :<FaRegEyeSlash /> }</button>
+        </div>
 
         <button
           type="submit"
