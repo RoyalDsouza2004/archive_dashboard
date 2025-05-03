@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "../../api/axios";
 import PublicationEditionForm from "../../components/SelectForm";
 import { toast } from "react-hot-toast";
+import Loading from "../../components/Loading";
 
 const ENewspaper = () => {
       const [publicationId, setPublicationId] = useState("");
@@ -168,7 +169,7 @@ const ENewspaper = () => {
 
 
                   {/* ✅ Display Retrieved Files */}
-                  {filesData.length > 0 && (
+                  {loading ? <Loading /> : filesData.length > 0 && (
                         <div className="mt-8 space-y-4">
                               <h2 className="text-xl font-semibold">Files Found</h2>
                               <p className="text-gray-700"><strong>Folder Path:</strong> {folderPath.replace(/\\/g, "/")}</p>
@@ -179,7 +180,7 @@ const ENewspaper = () => {
                                                 key={idx}
                                                 className={`p-2 rounded flex justify-between items-center ${file.isInDb ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}
                                           >
-                                                <span className="font-medium">{file.file}</span><span className="font-bold">{ file.isInDb ? "File is already present in database":"New file"}</span>
+                                                <span className="font-medium">{file.file}</span><span className="font-bold">{file.isInDb ? "File is already present in database" : "New file"}</span>
                                           </li>
                                     ))}
                               </ul>

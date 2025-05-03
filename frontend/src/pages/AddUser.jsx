@@ -3,6 +3,7 @@ import axios from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import Loading from "../components/Loading";
 
 const AddUserForm = () => {
       const [permissions, setPermissions] = useState([
@@ -98,7 +99,7 @@ const AddUserForm = () => {
             }
       };
 
-      if (loading) return <div className="text-center p-4">Loading...</div>;
+      if (loading) return <Loading />
 
       return (
             <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-6">
