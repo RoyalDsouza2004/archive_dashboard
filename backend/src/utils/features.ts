@@ -1,9 +1,8 @@
 import mariadb from 'mariadb';
 import dotenv from 'dotenv';
-import { PermissionType, TokenUser, UploadFilesType, UserType } from '../types/types.js';
+import { PermissionType, TokenUser, UploadFilesType} from '../types/types.js';
 import jwt from "jsonwebtoken"
 import { Response } from 'express';
-import { isAdmin } from '../middlewares/auth.js';
 
 dotenv.config();
 
