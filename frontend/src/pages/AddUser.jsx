@@ -57,9 +57,9 @@ const AddUserForm = () => {
             updated[index][field] = value;
 
             if (field === "publicationId") {
-                  updated[index]["editionId"] = ""; // Reset editionId when publication changes
+                  updated[index]["editionId"] = "";
                   if (value && !editionsMap[value]) {
-                        fetchEditions(value); // Fetch editions for the selected publication
+                        fetchEditions(value);
                   }
             }
 
@@ -78,17 +78,24 @@ const AddUserForm = () => {
       const handleSubmit = async (e) => {
             e.preventDefault();
 
+            const cleanedPermissions = permissions
+                  .filter((perm) => perm.publicationId && perm.editionId && perm.permission)
+                  .map((perm) => ({
+                        publicationId: perm.publicationId,
+                        editionId: perm.editionId,
+                        permission: perm.permission,
+                  }));
+            
+
             const payload = {
                   email: formData.email,
                   userName: formData.userName,
                   password: formData.password,
                   isAdmin: formData.isAdmin,
-                  permissions: permissions.map((perm) => ({
-                        publicationId: perm.publicationId,
-                        editionId: perm.editionId,
-                        permission: perm.permission,
-                  })),
+                  permissions: cleanedPermissions.length>0 ? cleanedPermissions :undefined
             };
+
+            console.log(payload)
 
             try {
                   await axios.post("/user/new", payload);
@@ -149,7 +156,7 @@ const AddUserForm = () => {
                               />
                               <button
                                     type="button"
-                                    onClick={()=> setShowPassword((prev) => !prev)}
+                                    onClick={() => setShowPassword((prev) => !prev)}
                                     className="absolute right-16 top-1/2 transform -translate-y-1/2 text-gray-500"
                               >
                                     {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}

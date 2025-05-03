@@ -16,6 +16,7 @@ export const addUser = TryCatch(async (req, res, next) => {
     }
     const userId = uuid();
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("hi");
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
@@ -28,8 +29,8 @@ export const addUser = TryCatch(async (req, res, next) => {
             return conn.query("INSERT INTO user_permission (User_Id, Publication_Id, Edition_Id, permission) VALUES (?, ?, ?, ?)", [userId, publicationId?.toUpperCase(), editionId?.toUpperCase(), permission]);
         });
         await Promise.all(permissionQueries);
-        conn.end();
     }
+    conn.end();
     return res.status(200).json({
         success: true,
         message: "User Created Successfully",
