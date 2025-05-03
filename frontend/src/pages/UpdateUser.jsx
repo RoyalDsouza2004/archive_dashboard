@@ -110,13 +110,17 @@ const UpdateUser = () => {
                         ...newPermissions,
                   ];
 
+
+
                   await axios.put(`/user/${userId}`, {
                         emailId: formData.emailId,
                         ...(formData.password && { password: formData.password }),
-                        permissions: finalPermissions,
                         isAdmin: user.isAdmin,
                         isActive: user.isActive,
+                        permissions: finalPermissions.length > 0 ? finalPermissions : [{ publicationId: "", editionId: "", permission: "" }],
                   });
+
+                  console.log(finalPermissions)
 
                   toast.success("User updated successfully!");
                   navigate("/profile");
