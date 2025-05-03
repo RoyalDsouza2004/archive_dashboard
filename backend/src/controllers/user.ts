@@ -30,6 +30,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
     const userId: string = uuid()
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    console.log("hi")
 
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
@@ -39,7 +40,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
         isAdmin
     ]);
 
-    if (permissions && permissions.length > 0) {
+    if (permissions && permissions.length > 0 ) {
         const permissionQueries = permissions.map(({ publicationId, editionId, permission }) => {
             return conn.query(
                 "INSERT INTO user_permission (User_Id, Publication_Id, Edition_Id, permission) VALUES (?, ?, ?, ?)",
@@ -48,8 +49,8 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
         });
 
         await Promise.all(permissionQueries);
-        conn.end();
     }
+    conn.end();
 
     return res.status(200).json({
         success: true,
