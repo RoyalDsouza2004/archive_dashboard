@@ -10,7 +10,7 @@ export const getPublication = TryCatch(async (req, res, next) => {
       const conn = await getConnection()
 
       const publications: Publication[] = await conn.query("select Publication_Id ,Publication_Name from publication")
-      conn.end()
+      conn.release()
 
       res.status(200).json({
             success: true,
@@ -30,7 +30,7 @@ export const getEdition = TryCatch(async (req, res, next) => {
       const editions: Edition[] = await conn.query(`SELECT e.Edition_Name, e.Edition_Id FROM edition e
             JOIN publication_edition pe ON e.Edition_Id = pe.Edition_Id
             WHERE pe.Publication_Id = ?;` , publicationId)
-      conn.end()
+      conn.release()
 
       res.status(200).json({
             success: true,
@@ -68,7 +68,7 @@ export const searchPapers = TryCatch(async (req, res: Response, next: NextFuncti
                   [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]
             );
       }
-      conn.end();
+      conn.release();
 
       const formattedLogs = logs.reduce((acc: Record<string, { Page: number | string; Path: string }[]>, log: {
             Page_No_From: number;

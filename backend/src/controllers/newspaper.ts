@@ -84,7 +84,7 @@ export const getNewNewspapers = TryCatch(async (req: Request, res, next) => {
 
   const filesStatus = await Promise.all(checkFilesPromises);
 
-  conn.end();
+  conn.release();
 
   res.status(200).json({
     success: true,
@@ -179,7 +179,7 @@ export const addNewNewsPapers = TryCatch(async (req: Request, res, next) => {
     pageNo: number;
   }[];
 
-  conn.end();
+  conn.release();
 
   const uploadPromises = subEditionResults.map(({ file, subEditionId, pageNo }) => {
     const filePath = path.join(folderPath, file);
@@ -215,7 +215,7 @@ export const getPublication = TryCatch(async (req, res, next) => {
   const conn = await getConnection()
 
   const publications: Publication[] = await conn.query("select Publication_Id ,Publication_Name from publication where isNewsPaper = true")
-  conn.end()
+  conn.release()
 
   res.status(200).json({
     success: true,

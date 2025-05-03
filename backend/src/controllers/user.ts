@@ -50,7 +50,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 
         await Promise.all(permissionQueries);
     }
-    conn.end();
+    conn.release();
 
     return res.status(200).json({
         success: true,
@@ -90,7 +90,7 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         [user.User_Id]
     );
 
-    conn.end()
+    conn.release()
 
     const permissions = permissionsResults.map((perm: any) => ({
         publicationId: perm.Publication_Id,
@@ -205,7 +205,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
 
     if (!permissions || permissions.length === 0) {
-        conn.end();
+        conn.release();
         return res.status(200).json({
             success: true,
             message: "User updated successfully (no permission changes)",
@@ -243,7 +243,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     });
 
     await Promise.all(queries);
-    conn.end();
+    conn.release();
 
     return res.status(200).json({
         success: true,
@@ -283,7 +283,7 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
         });
     });
 
-    conn.end()
+    conn.release()
     const formattedUsers = users.map((user: any) => ({
         userId: user.User_Id,
         isAdmin: user.isAdmin,
@@ -327,7 +327,7 @@ export const deleteUserPermission = TryCatch(async (
     const [user] = await conn.query("SELECT * FROM user WHERE User_Id = ?", [userId]);
 
     if (!user) {
-        conn.end();
+        conn.release();
         return next(new ErrorHandler("User not found", 404));
     }
 
@@ -338,7 +338,7 @@ export const deleteUserPermission = TryCatch(async (
     );
 
 
-    conn.end();
+    conn.release();
 
     return res.status(200).json({
         success: true,

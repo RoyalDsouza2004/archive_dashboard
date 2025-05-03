@@ -84,7 +84,7 @@ const Navbar = ({ userName = "Admin", setIsLoggedIn, isAdmin }) => {
         </div>
 
         {
-          isAdmin && <NavItem to="/profile" isActive={isActive('/profile')}>
+          isAdmin == 1 && <NavItem to="/profile" isActive={isActive('/profile')}>
             Admin
           </NavItem>
         }

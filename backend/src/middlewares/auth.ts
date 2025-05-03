@@ -15,7 +15,7 @@ export const isAdmin = TryCatch(async (req, res: Response, next: NextFunction) =
 
       const conn = await getConnection();
       const [user] = await conn.query("SELECT isAdmin FROM user WHERE User_Id = ?", [decoded.id]);
-      conn.end();
+      conn.release();
 
       if (!user || !user.isAdmin) {
             return next(new ErrorHandler("Forbidden: Admins only", 403));
@@ -49,7 +49,7 @@ export const readRoute = TryCatch(async (req, res, next) => {
             [id, publicationId, editionId]
       );
 
-      conn.end();
+      conn.release();
 
       if ((!result || (result.permission !== "r" && result.permission !== "rw")) ) {
             return next(new ErrorHandler("Access denied: Insufficient permission", 403));
@@ -81,7 +81,7 @@ export const writeRoute = TryCatch(async (req, res, next) => {
             [id, publicationId, editionId]
       );
 
-      conn.end();
+      conn.release();
 
       if ((!result || (result.permission !== "w" && result.permission !== "rw"))) {
             return next(new ErrorHandler("Access denied: Insufficient permission", 403));
@@ -111,7 +111,7 @@ export const authenticatedUser = async (req: Request, res: Response) => {
                         expires: new Date(Date.now()),
                   }).json({ authenticated: false })
             )
-            conn.end()
+            conn.release()
 
 
             res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName , isAdmin:decoded.isAdmin })

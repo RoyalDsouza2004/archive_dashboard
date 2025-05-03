@@ -70,7 +70,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
   });
 
   await Promise.all(insertPromises);
-  conn.end();
+  conn.release();
 
   const totalFiles = files.length - skippedEntries.length;
 
@@ -88,7 +88,7 @@ export const getPublication = TryCatch(async (req, res, next) => {
   const conn = await getConnection()
 
   const publications: Publication[] = await conn.query("select Publication_Id ,Publication_Name from publication where isNewsPaper = false")
-  conn.end()
+  conn.release()
 
   res.status(200).json({
     success: true,
