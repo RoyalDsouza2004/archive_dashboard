@@ -18,6 +18,7 @@ export const getNewNewspapers = TryCatch(async (req, res, next) => {
     const [[publication], [edition]] = await Promise.all([publicationPromise, editionPromise]);
     const folderPath = path.join(process.env.FOLDER_PATH, String(year), publication.Publication_Name, edition.Edition_Name.toLowerCase(), String(date));
     if (!fs.existsSync(folderPath)) {
+        conn.release();
         return next(new ErrorHandler(`Folder not found: ${folderPath}`, 404));
     }
     const files = fs.readdirSync(folderPath).filter((file) => {
@@ -32,9 +33,8 @@ export const getNewNewspapers = TryCatch(async (req, res, next) => {
             const fileName = file.split('/').pop();
             const [result] = await conn.query(`SELECT COUNT(*) AS count FROM log
         WHERE path LIKE ?`, [`%${fileName}%`]);
+            conn.release();
             const count = Number(result.count);
-            // Print the result to debug
-            console.log(`Query result for file ${file}:`, count);
             if (count === 0) {
                 return { file, isInDb: false };
             }

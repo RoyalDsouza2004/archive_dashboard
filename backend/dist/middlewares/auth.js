@@ -21,7 +21,6 @@ export const readRoute = TryCatch(async (req, res, next) => {
     if (!token)
         return next(new ErrorHandler("Unauthorized", 401));
     const { id, isAdmin } = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(id, isAdmin);
     if (isAdmin)
         return next();
     if (!id || !publicationId || !editionId) {
@@ -63,11 +62,11 @@ export const authenticatedUser = async (req, res) => {
         const conn = await getConnection();
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const [{ isActive }] = await conn.query("SELECT isActive FROM user WHERE User_Id = ?", [decoded.id]);
+        conn.release();
         if (!isActive)
             (res.status(401).cookie("token", "", {
                 expires: new Date(Date.now()),
             }).json({ authenticated: false }));
-        conn.release();
         res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName, isAdmin: decoded.isAdmin });
     }
     catch (err) {

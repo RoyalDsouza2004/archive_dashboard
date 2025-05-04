@@ -12,11 +12,11 @@ export const addUser = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const [user] = await conn.query("SELECT User_Name FROM user WHERE Email = ?", [email]);
     if (user) {
+        conn.release();
         return next(new ErrorHandler("User already exist", 404));
     }
     const userId = uuid();
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("hi");
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
         email,
@@ -37,20 +37,23 @@ export const addUser = TryCatch(async (req, res, next) => {
     });
 });
 export const loginUser = TryCatch(async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     if (!email || !password) {
         return next(new ErrorHandler("Please provide email and password", 400));
     }
     const conn = await getConnection();
     const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email]);
     if (!user) {
+        conn.release();
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
     const isMatch = await bcrypt.compare(password, user.Password);
     if (!isMatch) {
+        conn.release();
         return next(new ErrorHandler("Invalid email or password", 401));
     }
     if (!user.isActive) {
+        conn.release();
         return next(new ErrorHandler("Please ask Admin to Access again", 404));
     }
     const permissionsResults = await conn.query("SELECT Publication_Id, Edition_Id, permission FROM user_permission WHERE User_Id = ?", [user.User_Id]);
@@ -60,7 +63,16 @@ export const loginUser = TryCatch(async (req, res, next) => {
         editionId: perm.Edition_Id,
         permission: perm.permission,
     }));
-    sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
+    if (rememberMe) {
+        sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
+    }
+    return res.status(200).json({
+        success: true,
+        userName: user.User_Name,
+        isAdmin: user.isAdmin,
+        message: `Welcome back ${user.User_Name}`,
+        permissions
+    });
 });
 export const getUser = TryCatch(async (req, res, next) => {
     const { userId } = req.params;
@@ -70,6 +82,7 @@ export const getUser = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const [user] = await conn.query("SELECT User_Name, Email , isActive , isAdmin FROM user WHERE User_Id = ?", [userId]);
     if (!user) {
+        conn.release();
         return next(new ErrorHandler("User not found", 404));
     }
     const permissionsResults = await conn.query(`SELECT 
@@ -82,6 +95,7 @@ export const getUser = TryCatch(async (req, res, next) => {
          JOIN publication p ON up.Publication_Id = p.Publication_Id
          JOIN edition e ON up.Edition_Id = e.Edition_Id
          WHERE up.User_Id = ?`, [userId]);
+    conn.release();
     const permissions = permissionsResults.map((perm) => ({
         publicationId: perm.Publication_Id,
         publicationName: perm.Publication_Name,
@@ -111,6 +125,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     const conn = await getConnection();
     const [user] = await conn.query("SELECT User_Id, Email FROM user WHERE User_Id = ?", [userId]);
     if (!user) {
+        conn.release();
         return next(new ErrorHandler("User not found", 404));
     }
     if (emailId !== user.Email) {
@@ -119,13 +134,16 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
             return next(new ErrorHandler("Email is already taken", 400));
         }
         await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
+        conn.release();
     }
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [hashedPassword, userId]);
+        conn.release();
     }
     if (!isAdmin && !isActive && decoded.id === userId) {
         await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
+        conn.release();
         return res
             .status(401)
             .cookie("token", "", { expires: new Date(Date.now()) })
@@ -171,6 +189,7 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
          JOIN publication p ON up.Publication_Id = p.Publication_Id
          JOIN edition e ON up.Edition_Id = e.Edition_Id
         `);
+    conn.release();
     const permissionsMap = {};
     permissionsResults.forEach((perm) => {
         const userId = perm.User_Id;
@@ -183,7 +202,6 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
             permission: perm.permission
         });
     });
-    conn.release();
     const formattedUsers = users.map((user) => ({
         userId: user.User_Id,
         isAdmin: user.isAdmin,

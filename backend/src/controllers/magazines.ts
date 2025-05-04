@@ -45,6 +45,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
 
   if (!subEditionId) {
     fs.rmSync(folderPath, { recursive: true, force: true });
+    conn.release()
     return next(new ErrorHandler("SubEdition id is not found", 400));
   }
 

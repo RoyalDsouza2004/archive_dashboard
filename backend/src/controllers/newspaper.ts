@@ -44,6 +44,7 @@ export const getNewNewspapers = TryCatch(async (req: Request, res, next) => {
   );
 
   if (!fs.existsSync(folderPath)) {
+    conn.release()
     return next(new ErrorHandler(`Folder not found: ${folderPath}`, 404));
   }
 
@@ -65,11 +66,9 @@ export const getNewNewspapers = TryCatch(async (req: Request, res, next) => {
         WHERE path LIKE ?`,
         [`%${fileName}%`] 
       );
+      conn.release()
 
       const count = Number(result.count);  
-  
-      // Print the result to debug
-      console.log(`Query result for file ${file}:`, count);
   
       if (count === 0) {
         return { file, isInDb: false };

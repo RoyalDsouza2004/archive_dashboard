@@ -31,6 +31,7 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
      WHERE Publication_Id = ? AND Edition_Id = ?;`, [publicationId, editionId]);
     if (!subEditionId) {
         fs.rmSync(folderPath, { recursive: true, force: true });
+        conn.release();
         return next(new ErrorHandler("SubEdition id is not found", 400));
     }
     const skippedEntries = [];

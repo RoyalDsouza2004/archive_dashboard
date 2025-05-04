@@ -23,14 +23,13 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
     );
 
     if (user) {
+        conn.release()
         return next(new ErrorHandler("User already exist", 404))
     }
 
 
     const userId: string = uuid()
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    console.log("hi")
 
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
@@ -60,7 +59,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 })
 
 export const loginUser = TryCatch(async (req: Request, res, next) => {
-    const { email, password } = req.body;
+    const { email, password ,rememberMe } = req.body;
 
     if (!email || !password) {
         return next(new ErrorHandler("Please provide email and password", 400));
@@ -72,16 +71,19 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
     const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email]);
 
     if (!user) {
+        conn.release()
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
 
     const isMatch = await bcrypt.compare(password, user.Password);
     if (!isMatch) {
+        conn.release()
         return next(new ErrorHandler("Invalid email or password", 401));
     }
 
 
     if (!user.isActive) {
+        conn.release()
         return next(new ErrorHandler("Please ask Admin to Access again", 404))
     }
 
@@ -98,7 +100,18 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
         permission: perm.permission,
     }));
 
-    sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
+    if(rememberMe){
+        sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
+    }
+
+    return res.status(200).json({
+        success: true,
+        userName: user.User_Name,
+        isAdmin:user.isAdmin,
+        message:`Welcome back ${user.User_Name}`,
+        permissions
+  });
+
 
 });
 
@@ -117,6 +130,7 @@ export const getUser = TryCatch(async (req, res, next) => {
     );
 
     if (!user) {
+        conn.release()
         return next(new ErrorHandler("User not found", 404))
     }
 
@@ -133,6 +147,7 @@ export const getUser = TryCatch(async (req, res, next) => {
          WHERE up.User_Id = ?`,
         [userId]
     );
+    conn.release()
 
     const permissions: PermissionType[] = permissionsResults.map((perm: any) => ({
         publicationId: perm.Publication_Id,
@@ -175,6 +190,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     );
 
     if (!user) {
+        conn.release()
         return next(new ErrorHandler("User not found", 404));
     }
 
@@ -184,23 +200,26 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
             return next(new ErrorHandler("Email is already taken", 400));
         }
         await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
+        conn.release()
     }
 
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [hashedPassword, userId]);
+        conn.release()
     }
 
 
     if (!isAdmin && !isActive && decoded.id === userId) {
         await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
-
+        conn.release()
 
         return res
             .status(401)
             .cookie("token", "", { expires: new Date(Date.now()) })
             .json({ authenticated: false });
     }
+    
 
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
 
@@ -268,6 +287,7 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
          JOIN edition e ON up.Edition_Id = e.Edition_Id
         `
     );
+    conn.release()
 
     const permissionsMap: Record<string, PermissionType[]> = {};
 
@@ -282,8 +302,6 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
             permission: perm.permission
         });
     });
-
-    conn.release()
     const formattedUsers = users.map((user: any) => ({
         userId: user.User_Id,
         isAdmin: user.isAdmin,

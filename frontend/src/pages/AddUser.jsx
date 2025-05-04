@@ -168,6 +168,7 @@ const AddUserForm = () => {
                                     type="checkbox"
                                     id="isAdmin"
                                     checked={formData.isAdmin}
+                                    className="accent-green-300 hover:accent-green-500"
                                     onChange={(e) =>
                                           setFormData((prev) => ({ ...prev, isAdmin: e.target.checked }))
                                     }

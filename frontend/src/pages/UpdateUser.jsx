@@ -178,7 +178,7 @@ const UpdateUser = () => {
                                           type="checkbox"
                                           checked={user.isAdmin}
                                           onChange={() => handleCheckboxChange("isAdmin")}
-                                          className="mr-2"
+                                          className="mr-2 accent-purple-500"
                                     />
                                     Is Admin
                               </label>
@@ -188,7 +188,7 @@ const UpdateUser = () => {
                                           type="checkbox"
                                           checked={user.isActive}
                                           onChange={() => handleCheckboxChange("isActive")}
-                                          className="mr-2"
+                                          className="mr-2 accent-green-500"
                                     />
                                     Is Active
                               </label>

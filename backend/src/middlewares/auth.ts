@@ -30,11 +30,9 @@ export const readRoute = TryCatch(async (req, res, next) => {
       const { publicationId, editionId } = req.query;
 
       if (!token) return next(new ErrorHandler("Unauthorized", 401));
-      const { id ,isAdmin } = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string , isAdmin:string}
+      const { id, isAdmin } = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, isAdmin: string }
 
-      console.log(id,isAdmin)
-
-      if(isAdmin) return next();
+      if (isAdmin) return next();
 
 
       if (!id || !publicationId || !editionId) {
@@ -42,7 +40,6 @@ export const readRoute = TryCatch(async (req, res, next) => {
       }
       const conn = await getConnection();
 
-      
 
       const [result] = await conn.query(
             "SELECT permission FROM user_permission WHERE User_Id = ? AND Publication_Id = ? AND Edition_Id = ?",
@@ -51,7 +48,7 @@ export const readRoute = TryCatch(async (req, res, next) => {
 
       conn.release();
 
-      if ((!result || (result.permission !== "r" && result.permission !== "rw")) ) {
+      if ((!result || (result.permission !== "r" && result.permission !== "rw"))) {
             return next(new ErrorHandler("Access denied: Insufficient permission", 403));
       }
 
@@ -64,16 +61,15 @@ export const writeRoute = TryCatch(async (req, res, next) => {
       const { token } = req.cookies;
 
       if (!token) return next(new ErrorHandler("Unauthorized", 401));
-      const { id , isAdmin } = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string , isAdmin:string}
+      const { id, isAdmin } = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, isAdmin: string }
 
-      if(isAdmin) return next();
+      if (isAdmin) return next();
 
       if (!id || !publicationId || !editionId) {
             return next(new ErrorHandler("Invalid user or request data", 400));
       }
 
       const conn = await getConnection();
-
 
 
       const [result] = await conn.query(
@@ -99,22 +95,24 @@ export const authenticatedUser = async (req: Request, res: Response) => {
 
       try {
             const conn = await getConnection()
-            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string , isAdmin:boolean}
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string, isAdmin: boolean }
 
             const [{ isActive }] = await conn.query(
                   "SELECT isActive FROM user WHERE User_Id = ?",
                   [decoded.id]
             );
 
+            conn.release()
+
             if (!isActive) (
                   res.status(401).cookie("token", "", {
                         expires: new Date(Date.now()),
                   }).json({ authenticated: false })
             )
-            conn.release()
 
 
-            res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName , isAdmin:decoded.isAdmin })
+
+            res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName, isAdmin: decoded.isAdmin })
 
       } catch (err) {
             res.status(401).cookie("token", "", {
