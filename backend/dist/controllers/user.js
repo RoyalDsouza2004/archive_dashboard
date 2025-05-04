@@ -141,14 +141,6 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
         await conn.query("UPDATE user SET Password = ? WHERE User_Id = ?", [hashedPassword, userId]);
         conn.release();
     }
-    if (!isAdmin && !isActive && decoded.id === userId) {
-        await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
-        conn.release();
-        return res
-            .status(401)
-            .cookie("token", "", { expires: new Date(Date.now()) })
-            .json({ authenticated: false });
-    }
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
     if (!permissions || permissions.length === 0) {
         conn.release();

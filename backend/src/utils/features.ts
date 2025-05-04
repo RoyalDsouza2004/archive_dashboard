@@ -83,6 +83,8 @@ export const sendCookie = (user: TokenUser, res: Response, message: string, stat
 
       return res.status(statusCode).cookie("token", token, {
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: "lax",
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
       }).json({
             success: true,
