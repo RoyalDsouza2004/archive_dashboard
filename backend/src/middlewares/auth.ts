@@ -86,7 +86,7 @@ export const writeRoute = TryCatch(async (req, res, next) => {
       next();
 })
 
-export const authenticatedUser = async (req: Request, res: Response) => {
+export const authenticatedUser = async (req: Request, res: Response , next:NextFunction) => {
       const token = req.cookies.token;
 
       if (!token) {
@@ -97,19 +97,18 @@ export const authenticatedUser = async (req: Request, res: Response) => {
             const conn = await getConnection()
             const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string, isAdmin: boolean }
 
-            const [{ isActive }] = await conn.query(
-                  "SELECT isActive FROM user WHERE User_Id = ?",
+            const [{ isActive, isAdmin }] = await conn.query(
+                  "SELECT isActive , isAdmin FROM user WHERE User_Id = ?",
                   [decoded.id]
             );
 
             conn.release()
 
-            if (!isActive) (
+            if (!isActive || !isAdmin) (
                   res.status(401).cookie("token", "", {
                         expires: new Date(Date.now()),
                   }).json({ authenticated: false })
             )
-
 
 
             res.status(200).json({ authenticated: true, userId: decoded.id, userName: decoded.userName, isAdmin: decoded.isAdmin })
