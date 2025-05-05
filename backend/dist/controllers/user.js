@@ -9,7 +9,7 @@ export const addUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Please Provide all fields", 400));
     }
     const conn = await getConnection();
-    const [user] = await conn.query("SELECT Email as email FROM user WHERE Email = ?", [email]);
+    const [user] = await conn.query("SELECT Email as email FROM user WHERE Email = ?", [email.toLowerCase()]);
     if (user > email) {
         conn.release();
         return next(new ErrorHandler("Email already exist", 404));
@@ -18,7 +18,7 @@ export const addUser = TryCatch(async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
-        email,
+        email.toLowerCase(),
         userName,
         hashedPassword,
         isAdmin
@@ -41,7 +41,7 @@ export const loginUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Please provide email and password", 400));
     }
     const conn = await getConnection();
-    const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email]);
+    const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email.toLowerCase()]);
     if (!user) {
         conn.release();
         return next(new ErrorHandler("Invalid Email or Password", 401));

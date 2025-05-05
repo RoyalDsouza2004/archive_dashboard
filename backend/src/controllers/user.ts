@@ -5,7 +5,6 @@ import { PermissionType, UserType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import jwt from "jsonwebtoken"
 
 
 export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next) => {
@@ -19,7 +18,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
     const conn = await getConnection();
     const [user] = await conn.query(
         "SELECT Email as email FROM user WHERE Email = ?",
-        [email]
+        [email.toLowerCase()]
     );
 
     if (user>email) {
@@ -33,7 +32,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 
     await conn.query("INSERT INTO user (User_Id, Email, User_Name, Password , isAdmin) VALUES (?, ?, ? ,? ,?)", [
         userId,
-        email,
+        email.toLowerCase(),
         userName,
         hashedPassword,
         isAdmin
@@ -68,7 +67,7 @@ export const loginUser = TryCatch(async (req: Request, res, next) => {
     const conn = await getConnection();
 
 
-    const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email]);
+    const [user] = await conn.query("SELECT * FROM user WHERE Email = ?", [email.toLowerCase()]);
 
     if (!user) {
         conn.release()

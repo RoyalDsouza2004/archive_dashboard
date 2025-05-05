@@ -95,14 +95,15 @@ const AddUserForm = () => {
                   permissions: cleanedPermissions.length>0 ? cleanedPermissions :undefined
             };
 
-            console.log(payload)
 
             try {
-                  await axios.post("/user/new", payload);
-                  toast.success("User added successfully!");
+                  const res = await axios.post("/user/new", payload);
+                  
+                  toast.success(res.data.message);
                   navigate("/profile");
             } catch (err) {
-                  toast.error("Failed to add user");
+                  console.log(err)
+                  toast.error(err.response?.data.message);
             }
       };
 
