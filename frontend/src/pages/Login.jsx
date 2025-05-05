@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { toast } from "react-hot-toast";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import CryptoJS from "crypto-js";
+
+const SECRET_KEY =import.meta.env.VITE_SECRET_KEY;
 
 const Login = ({ onLoginSuccess, isLoggedIn, setUserName, setIsAdmin }) => {
   const [email, setEmail] = useState("");
@@ -19,9 +22,28 @@ const Login = ({ onLoginSuccess, isLoggedIn, setUserName, setIsAdmin }) => {
     }
   }, [isLoggedIn, navigate]);
 
+  useEffect(() => {
+    const encryptedEmail = localStorage.getItem("temp_email");
+    const encryptedPassword = localStorage.getItem("temp_password");
+
+    if (encryptedEmail) {
+      const bytesEmail = CryptoJS.AES.decrypt(encryptedEmail, SECRET_KEY);
+      setEmail(bytesEmail.toString(CryptoJS.enc.Utf8));
+    }
+
+    if (encryptedPassword) {
+      const bytesPassword = CryptoJS.AES.decrypt(encryptedPassword, SECRET_KEY);
+      setPassword(bytesPassword.toString(CryptoJS.enc.Utf8));
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Encrypt and store email/password temporarily
+    localStorage.setItem("temp_email", CryptoJS.AES.encrypt(email, SECRET_KEY).toString());
+    localStorage.setItem("temp_password", CryptoJS.AES.encrypt(password, SECRET_KEY).toString());
 
     try {
       const res = await axios.post(
@@ -40,6 +62,10 @@ const Login = ({ onLoginSuccess, isLoggedIn, setUserName, setIsAdmin }) => {
         setUserName(res.data.userName);
         setIsAdmin(res.data.isAdmin);
         navigate("/");
+
+        // Clear stored credentials
+        localStorage.removeItem("temp_email");
+        localStorage.removeItem("temp_password");
       } else {
         throw new Error("Login failed");
       }
