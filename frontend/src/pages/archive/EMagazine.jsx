@@ -20,7 +20,7 @@ const EMagazine = () => {
         }
         setPublications(response.data.publications);
       } catch (err) {
-        console.error(err);
+
         toast.error(`Failed to load publications`);
       }
     };
@@ -114,7 +114,6 @@ const EMagazine = () => {
         setRows([{ id: 1, from: "", to: "", file: null }]);
     
       } catch (error) {
-        console.error("Submission error:", error);
         toast.error(error.response?.data?.message || error.message || "Submission failed");
       } finally {
         setIsSubmitting(false);

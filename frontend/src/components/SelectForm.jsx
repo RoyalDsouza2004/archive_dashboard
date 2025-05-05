@@ -21,7 +21,6 @@ const PublicationEditionForm = ({publications, publicationId, editionId, publish
         }
         setEditions(response.data.editions || []);
       } catch (err) {
-        console.error(err);
         toast.error(`Failed to load editions`);
       } finally {
         setLoading(prev => ({ ...prev, editions: false }));

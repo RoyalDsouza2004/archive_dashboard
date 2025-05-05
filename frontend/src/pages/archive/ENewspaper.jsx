@@ -25,7 +25,6 @@ const ENewspaper = () => {
                         }
                         setPublications(response.data.publications);
                   } catch (err) {
-                        console.error(err);
                         toast.error(`Failed to load publications`);
                   } finally {
                         setLoadingPublications(false);
@@ -65,7 +64,6 @@ const ENewspaper = () => {
                         throw new Error("Failed to fetch files");
                   }
             } catch (error) {
-                  console.error(error);
                   setFilesData([]);
                   setFolderPath("");
                   toast.error(error.response?.data?.message || error.message || "Failed to fetch files");
@@ -124,7 +122,6 @@ const ENewspaper = () => {
                   }
 
             } catch (error) {
-                  console.error(error);
                   toast.error(error.response?.data?.message || "Failed to confirm files");
             } finally {
                   setConfirmLoading(false);
