@@ -9,7 +9,7 @@ export const addUser = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler("Please Provide all fields", 400));
     }
     const conn = await getConnection();
-    const [user] = await conn.query("SELECT Email FROM user WHERE Email = ?", [email]);
+    const [user] = await conn.query("SELECT Email as email FROM user WHERE Email = ?", [email]);
     if (user > email) {
         conn.release();
         return next(new ErrorHandler("Email already exist", 404));

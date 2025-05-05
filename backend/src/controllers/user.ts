@@ -18,7 +18,7 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 
     const conn = await getConnection();
     const [user] = await conn.query(
-        "SELECT Email FROM user WHERE Email = ?",
+        "SELECT Email as email FROM user WHERE Email = ?",
         [email]
     );
 
