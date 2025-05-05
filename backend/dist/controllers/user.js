@@ -3,17 +3,16 @@ import { getConnection, sendCookie } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import jwt from "jsonwebtoken";
 export const addUser = TryCatch(async (req, res, next) => {
     const { email, userName, password, isAdmin, permissions } = req.body;
     if (!email || !userName || !password) {
         return next(new ErrorHandler("Please Provide all fields", 400));
     }
     const conn = await getConnection();
-    const [user] = await conn.query("SELECT User_Name FROM user WHERE Email = ?", [email]);
-    if (user) {
+    const [user] = await conn.query("SELECT Email FROM user WHERE Email = ?", [email]);
+    if (user > email) {
         conn.release();
-        return next(new ErrorHandler("User already exist", 404));
+        return next(new ErrorHandler("Email already exist", 404));
     }
     const userId = uuid();
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -117,8 +116,6 @@ export const getUser = TryCatch(async (req, res, next) => {
 export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     const { userId } = req.params;
     const { permissions, isAdmin, isActive, emailId, password } = req.body;
-    const { token } = req.cookies;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId) {
         return next(new ErrorHandler("User ID is required", 400));
     }
@@ -131,6 +128,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
     if (emailId !== user.Email) {
         const [emailExists] = await conn.query("SELECT * FROM user WHERE Email = ?", [emailId]);
         if (emailExists) {
+            conn.release();
             return next(new ErrorHandler("Email is already taken", 400));
         }
         await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
@@ -142,6 +140,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req, res, next) => {
         conn.release();
     }
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
+    conn.release();
     if (!permissions || permissions.length === 0) {
         conn.release();
         return res.status(200).json({

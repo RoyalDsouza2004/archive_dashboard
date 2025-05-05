@@ -18,13 +18,13 @@ export const addUser = TryCatch(async (req: Request<{}, {}, UserType>, res, next
 
     const conn = await getConnection();
     const [user] = await conn.query(
-        "SELECT User_Name FROM user WHERE Email = ?",
+        "SELECT Email FROM user WHERE Email = ?",
         [email]
     );
 
-    if (user) {
+    if (user>email) {
         conn.release()
-        return next(new ErrorHandler("User already exist", 404))
+        return next(new ErrorHandler("Email already exist", 404))
     }
 
 
@@ -174,9 +174,6 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
 
     const { userId } = req.params;
     const { permissions, isAdmin, isActive, emailId, password } = req.body;
-    const { token } = req.cookies;
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string, userName: string, isAdmin: boolean }
 
     if (!userId) {
         return next(new ErrorHandler("User ID is required", 400));
@@ -197,6 +194,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     if (emailId !== user.Email) {
         const [emailExists] = await conn.query("SELECT * FROM user WHERE Email = ?", [emailId]);
         if (emailExists) {
+            conn.release()
             return next(new ErrorHandler("Email is already taken", 400));
         }
         await conn.query("UPDATE user SET Email = ? WHERE User_Id = ?", [emailId, userId]);
@@ -210,6 +208,7 @@ export const addOrUpdateUserPermission = TryCatch(async (req: Request<{ userId?:
     }
 
     await conn.query("UPDATE user SET isAdmin = ?, isActive = ? WHERE User_Id = ?", [isAdmin, isActive, userId]);
+    conn.release()
 
     if (!permissions || permissions.length === 0) {
         conn.release();
