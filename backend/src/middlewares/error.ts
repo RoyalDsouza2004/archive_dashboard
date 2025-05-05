@@ -8,6 +8,10 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+    err.message = "Duplicate entry. This value already exists.";
+    err.statusCode = 400;
+  }
   err.message ||= "Internal Server Error";
   err.statusCode ||= 500;
 

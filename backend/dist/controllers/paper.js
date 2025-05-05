@@ -33,13 +33,15 @@ export const searchPapers = TryCatch(async (req, res, next) => {
         logs = await conn.query(`SELECT l.Page_No_From, l.Page_No_To, l.path, l.Date, se.Sub_Edition_Name
            FROM log l
            JOIN sub_edition se ON l.Sub_Edition_Id = se.Sub_Edition_Id
-           WHERE l.Sub_Edition_Id = ? AND l.Date = ?`, [subEditionId.toUpperCase(), date]);
+           WHERE l.Sub_Edition_Id = ? AND l.Date = ? 
+           ORDER BY l.Page_No_From asc`, [subEditionId.toUpperCase(), date]);
     }
     else {
         logs = await conn.query(`SELECT l.Page_No_From, l.Page_No_To, l.path, l.Date, se.Sub_Edition_Name
            FROM log l
            JOIN sub_edition se ON l.Sub_Edition_Id = se.Sub_Edition_Id
-           WHERE se.Publication_Id = ? AND se.Edition_Id = ? AND l.Date = ?`, [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]);
+           WHERE se.Publication_Id = ? AND se.Edition_Id = ? AND l.Date = ?
+           ORDER BY l.Page_No_From asc`, [publicationId?.toUpperCase(), editionId?.toUpperCase(), date]);
     }
     conn.release();
     const formattedLogs = logs.reduce((acc, log) => {
