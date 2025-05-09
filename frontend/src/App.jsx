@@ -1,6 +1,6 @@
 import { useEffect, useState, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
 import axios from "./api/axios";
 import React from "react";
@@ -28,8 +28,15 @@ const App = () => {
       setIsLoggedIn(res.data.authenticated);
       setUserName(res.data.userName);
       setIsAdmin(res.data.isAdmin);
+
+      if (res.data.authenticated === false) {
+        toast.error(res.data?.message)
+      }
+
     } catch (err) {
       setIsLoggedIn(false);
+      err.response?.data?.message && toast.error(err.response?.data?.message)
+
     } finally {
       setLoading(false);
     }

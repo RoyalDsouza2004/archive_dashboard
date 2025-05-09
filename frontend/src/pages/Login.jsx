@@ -41,7 +41,6 @@ const Login = ({ onLoginSuccess, isLoggedIn, setUserName, setIsAdmin }) => {
     e.preventDefault();
     setLoading(true);
 
-    // Encrypt and store email/password temporarily
     localStorage.setItem("temp_email", CryptoJS.AES.encrypt(email, SECRET_KEY).toString());
     localStorage.setItem("temp_password", CryptoJS.AES.encrypt(password, SECRET_KEY).toString());
 

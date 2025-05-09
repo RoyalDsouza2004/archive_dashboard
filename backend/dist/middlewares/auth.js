@@ -59,28 +59,36 @@ export const authenticatedUser = async (req, res, next) => {
         return res.status(401).json({ authenticated: false });
     }
     try {
-        const conn = await getConnection();
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const conn = await getConnection();
         const [{ isActive, isAdmin }] = await conn.query("SELECT isActive, isAdmin FROM user WHERE User_Id = ?", [decoded.id]);
         conn.release();
         if (!isActive) {
             return res.status(401).cookie("token", "", {
                 httpOnly: true,
                 expires: new Date(Date.now()),
-            }).json({ authenticated: false });
+            }).json({ authenticated: false, message: "Unauthorised" });
         }
         let finalToken = token;
         if (decoded.isAdmin !== isAdmin) {
+            const originalExp = decoded.exp;
+            console.log(originalExp);
+            if (!originalExp) {
+                return res.status(401).json({ authenticated: false, message: "Invalid token structure" });
+            }
+            const expiresInSeconds = originalExp - Math.floor(Date.now() / 1000);
             finalToken = jwt.sign({
                 id: decoded.id,
                 userName: decoded.userName,
                 isAdmin: isAdmin,
-            }, process.env.JWT_SECRET);
+            }, process.env.JWT_SECRET, {
+                expiresIn: expiresInSeconds,
+            });
             res.cookie("token", finalToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "strict",
-                expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+                expires: new Date(originalExp * 1000),
             });
         }
         return res.status(200).json({
@@ -95,6 +103,6 @@ export const authenticatedUser = async (req, res, next) => {
         return res.status(401).cookie("token", "", {
             httpOnly: true,
             expires: new Date(Date.now()),
-        }).json({ authenticated: false });
+        }).json({ authenticated: false, message: "Something Went Wrong" });
     }
 };

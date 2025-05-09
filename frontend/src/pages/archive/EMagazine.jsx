@@ -20,7 +20,6 @@ const EMagazine = () => {
         }
         setPublications(response.data.publications);
       } catch (err) {
-
         toast.error(`Failed to load publications`);
       }
     };

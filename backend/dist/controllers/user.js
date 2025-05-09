@@ -63,15 +63,9 @@ export const loginUser = TryCatch(async (req, res, next) => {
         permission: perm.permission,
     }));
     if (rememberMe) {
-        sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions);
+        sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions, new Date(Date.now() + 1000 * 60 * 60 * 24 * 30));
     }
-    return res.status(200).json({
-        success: true,
-        userName: user.User_Name,
-        isAdmin: user.isAdmin,
-        message: `Welcome back ${user.User_Name}`,
-        permissions
-    });
+    sendCookie(user, res, `Welcome back ${user.User_Name}`, 200, permissions, new Date(Date.now() + 1000 * 60 * 30));
 });
 export const getUser = TryCatch(async (req, res, next) => {
     const { userId } = req.params;

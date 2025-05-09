@@ -57,18 +57,25 @@ export const getPrefixSuffixPage = (filename) => {
         }
         : null;
 };
-export const sendCookie = (user, res, message, statusCode = 200, permissions) => {
-    const token = jwt.sign({ id: user.User_Id, userName: user.User_Name, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
+export const sendCookie = (user, res, message, statusCode = 200, permissions, duration) => {
+    const expiresInSeconds = Math.floor((duration.getTime() - Date.now()) / 1000);
+    const token = jwt.sign({
+        id: user.User_Id,
+        userName: user.User_Name,
+        isAdmin: user.isAdmin,
+    }, process.env.JWT_SECRET, {
+        expiresIn: expiresInSeconds,
+    });
     return res.status(statusCode).cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        expires: duration,
     }).json({
         success: true,
         userName: user.User_Name,
         isAdmin: user.isAdmin,
         message,
-        permissions
+        permissions,
     });
 };

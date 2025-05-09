@@ -24,7 +24,6 @@ export default function Search() {
         }
         setPublications(response.data.publications);
       } catch (err) {
-        console.error(err);
         toast.error(`Failed to load publications`);
       } finally {
         setLoadingPublications(false);

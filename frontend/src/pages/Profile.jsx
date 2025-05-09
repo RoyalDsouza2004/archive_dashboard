@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../api/axios" 
 import UsersTable from "../components/UsersTable";
 import Loading from "../components/Loading";
+import {toast} from "react-hot-toast";
 
 const Profile = () => {
   const [users, setUsers] = useState([]);
@@ -12,7 +13,7 @@ const Profile = () => {
       const res = await axios.get("/user/all");
       setUsers(res.data.users);
     } catch (err) {
-      console.error("Failed to fetch users", err);
+      toast.error(err.response.data.message)
     } finally {
       setLoading(false);
     }

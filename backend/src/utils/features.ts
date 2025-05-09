@@ -77,20 +77,38 @@ export const getPrefixSuffixPage = (filename: string) => {
 };
 
 
+export const sendCookie = (
+  user: TokenUser,
+  res: Response,
+  message: string,
+  statusCode = 200,
+  permissions: PermissionType,
+  duration: Date
+) => {
+  const expiresInSeconds = Math.floor((duration.getTime() - Date.now()) / 1000);
 
-export const sendCookie = (user: TokenUser, res: Response, message: string, statusCode = 200, permissions: PermissionType) => {
-      const token = jwt.sign({ id: user.User_Id, userName: user.User_Name, isAdmin: user.isAdmin }, process.env.JWT_SECRET as string);
+  const token = jwt.sign(
+    {
+      id: user.User_Id,
+      userName: user.User_Name,
+      isAdmin: user.isAdmin,
+    },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: expiresInSeconds,
+    }
+  );
 
-      return res.status(statusCode).cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: "lax",
-            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-      }).json({
-            success: true,
-            userName: user.User_Name,
-            isAdmin:user.isAdmin,
-            message,
-            permissions
-      });
-}
+  return res.status(statusCode).cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    expires: duration,
+  }).json({
+    success: true,
+    userName: user.User_Name,
+    isAdmin: user.isAdmin,
+    message,
+    permissions,
+  });
+};
