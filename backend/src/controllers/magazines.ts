@@ -58,7 +58,7 @@ export const addNewMagazines = TryCatch(async (req: Request<{}, {}, UploadReques
 
     const fullFilePath = file.path;
 
-    const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH as string, '\\Storage');
+    const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH as string, '\\Storage').replace(/\\/g, "/");;
 
     await insertLog({
       subEditionId: subEditionId.Sub_Edition_Id,

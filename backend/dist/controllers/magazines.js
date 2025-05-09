@@ -38,7 +38,8 @@ export const addNewMagazines = TryCatch(async (req, res, next) => {
     const insertPromises = files.map(async (file, index) => {
         const { pageNoFrom, pageNoTo } = parsedPages[index] || { pageNoFrom: 1, pageNoTo: 1 };
         const fullFilePath = file.path;
-        const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH, '\\Storage');
+        const relativeFilePath = fullFilePath.replace(process.env.FOLDER_PATH, '\\Storage').replace(/\\/g, "/");
+        ;
         await insertLog({
             subEditionId: subEditionId.Sub_Edition_Id,
             date,
